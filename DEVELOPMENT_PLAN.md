@@ -5,7 +5,7 @@
 
 ---
 
-## Phase 1: Project Setup
+## Phase 1: Project Setup (COMPLETED)
 **Goal:** Get Express running with a clean folder structure and basic middleware.
 
 ### 1.1 Folder Structure
@@ -25,16 +25,16 @@ letterboxd/
 ```
 
 ### 1.2 Steps
-- [ ] `npm init` and install: `express`, `dotenv`, `cors`, `pg`, `bcrypt`, `jsonwebtoken`
-- [ ] Set up `server.js` (starts server on a port)
-- [ ] Set up `src/app.js` (registers middleware and routes)
-- [ ] Add `.env` with `PORT`, `DATABASE_URL`, `JWT_SECRET`
-- [ ] Add `.gitignore` (include `node_modules`, `.env`)
-- [ ] Test that `GET /` returns `{ message: "Server is running" }`
+- [x] `npm init` and install: `express`, `dotenv`, `cors`, `pg`, `bcrypt`, `jsonwebtoken`
+- [x] Set up `server.js` (starts server on a port)
+- [x] Set up `src/app.js` (registers middleware and routes)
+- [x] Add `.env` with `PORT`, `DATABASE_URL`, `JWT_SECRET`
+- [x] Add `.gitignore` (include `node_modules`, `.env`)
+- [x] Test that `GET /` returns `{ message: "Server is running" }`
 
 ---
 
-## Phase 2: Database Design
+## Phase 2: Database Design (COMPLETED)
 **Goal:** Design a clean PostgreSQL schema that can grow.
 
 ### Tables
@@ -106,10 +106,10 @@ letterboxd/
 - A review belongs to either a song OR an album (not enforced at DB level, but at app level)
 
 ### Steps
-- [ ] Install and connect to PostgreSQL locally
-- [ ] Create a database: `melodex_db`
-- [ ] Write and run `schema.sql` to create all tables
-- [ ] Test connections with `psql`
+- [x] Install and connect to PostgreSQL locally
+- [x] Create a database: `melodex_db`
+- [x] Write and run `schema.sql` to create all tables
+- [x] Test connections with `psql`
 
 ---
 
