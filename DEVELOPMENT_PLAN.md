@@ -113,7 +113,7 @@ letterboxd/
 
 ---
 
-## Phase 3: Authentication System
+## Phase 3: Authentication System (COMPLETED)
 **Goal:** Let users sign up and log in. Protect routes that require auth.
 
 ### Endpoints
@@ -132,10 +132,10 @@ Client → GET /profile (with Bearer token) → Middleware verifies → Controll
 ```
 
 ### Steps
-- [ ] Write `authController.js` (signup + login logic)
-- [ ] Write `authRoutes.js` (wire routes to controller)
-- [ ] Write `authMiddleware.js` (verify JWT on protected routes)
-- [ ] Test with a tool like Postman or Thunder Client
+- [x] Write `authController.js` (signup + login logic)
+- [x] Write `authRoutes.js` (wire routes to controller)
+- [x] Write `authMiddleware.js` (verify JWT on protected routes)
+- [x] Test with a tool like Postman or Thunder Client
 
 ---
 
@@ -236,5 +236,5 @@ Spotify uses **Client Credentials Flow** for public data (no user login needed):
 ---
 
 ## Current Status
-> **Phase:** Phase 3 — Authentication System
-> **Next step:** Setup user sign up and login endpoints with JWT
+> **Phase:** Phase 4 — Song & Album Handling
+> **Next step:** Learn about Spotify API Client Credentials flow
