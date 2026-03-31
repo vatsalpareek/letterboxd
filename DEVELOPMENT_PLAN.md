@@ -49,11 +49,12 @@ letterboxd/
 | bio | TEXT | Optional |
 | created_at | TIMESTAMP | DEFAULT NOW() |
 
-#### `songs` *(cached from Spotify)*
+#### `songs` *(cached from Apple iTunes)*
 | Column | Type | Notes |
 |---|---|---|
 | id | SERIAL PRIMARY KEY | |
-| spotify_id | VARCHAR(100) UNIQUE NOT NULL | |
+| external_id | VARCHAR(100) NOT NULL | |
+| source_platform | VARCHAR(50) NOT NULL | |
 | title | VARCHAR(255) NOT NULL | |
 | artist | VARCHAR(255) NOT NULL | |
 | album_name | VARCHAR(255) | |
@@ -61,11 +62,12 @@ letterboxd/
 | duration_ms | INT | |
 | cached_at | TIMESTAMP | DEFAULT NOW() |
 
-#### `albums` *(cached from Spotify)*
+#### `albums` *(cached from Apple iTunes)*
 | Column | Type | Notes |
 |---|---|---|
 | id | SERIAL PRIMARY KEY | |
-| spotify_id | VARCHAR(100) UNIQUE NOT NULL | |
+| external_id | VARCHAR(100) NOT NULL | |
+| source_platform | VARCHAR(50) NOT NULL | |
 | title | VARCHAR(255) NOT NULL | |
 | artist | VARCHAR(255) NOT NULL | |
 | cover_url | TEXT | |
@@ -229,4 +231,4 @@ Client → GET /profile (with Bearer token) → Middleware verifies → Controll
 
 ## Current Status
 > **Phase:** Phase 4 — Song & Album Handling
-> **Next step:** Learn about Spotify API Client Credentials flow
+> **Next step:** Implement song/album routes and controllers using Apple iTunes API
