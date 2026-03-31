@@ -139,34 +139,26 @@ Client → GET /profile (with Bearer token) → Middleware verifies → Controll
 
 ---
 
-## Phase 4: Song & Album Handling (Spotify API)
-**Goal:** Let users search for songs/albums via Spotify. Cache results locally.
+## Phase 4: Song & Album Handling (iTunes API)
+**Goal:** Let users search for songs/albums via Apple's free iTunes API. Cache results locally.
 
 ### Why Cache?
-- Spotify API has rate limits
 - Faster response times
 - You can attach local data (ratings, reviews) to a local ID
 
-### Strategy: Search → Cache → Return
+### Strategy: Search -> Cache -> Return
 1. User searches for "Blinding Lights"
-2. Your server calls **Spotify Search API**
-3. Results come back — you check if `spotify_id` already exists in your `songs` table
+2. Your server calls **iTunes Search API**
+3. Results come back — you check if `external_id` already exists in your `songs` table
 4. If not, insert it (caching). If yes, just return existing row.
 5. Return song data to client
 
 ### Endpoints
-- `GET /api/songs/search?q=blinding+lights` — Search via Spotify, cache results
-- `GET /api/songs/:spotifyId` — Get cached song details
-
-### Spotify Auth
-Spotify uses **Client Credentials Flow** for public data (no user login needed):
-- Register app at [developer.spotify.com](https://developer.spotify.com)
-- Get `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`
-- Exchange for an access token → use it in API calls
+- `GET /api/songs/search?q=blinding+lights` — Search via Apple, cache results
+- `GET /api/songs/:id` — Get cached song details
 
 ### Steps
-- [ ] Register Spotify app, get credentials
-- [ ] Write a `spotifyService.js` to handle token fetch + search
+- [x] Write an `appleService.js` to handle fetching search results
 - [ ] Write `songsController.js` and `songsRoutes.js`
 - [ ] Test search endpoint
 
@@ -179,8 +171,8 @@ Spotify uses **Client Credentials Flow** for public data (no user login needed):
 - `POST /api/reviews` — Add a review (protected)
 - `PUT /api/reviews/:id` — Edit a review (protected, must be owner)
 - `DELETE /api/reviews/:id` — Delete a review (protected, must be owner)
-- `GET /api/reviews/song/:spotifyId` — Get all reviews for a song
-- `GET /api/reviews/song/:spotifyId/rating` — Get average rating
+- `GET /api/reviews/song/:externalId` — Get all reviews for a song
+- `GET /api/reviews/song/:externalId/rating` — Get average rating
 
 ### Business Logic
 - A user can only have **one review per song** (enforce with a unique constraint or app-level check)
