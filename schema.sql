@@ -12,7 +12,7 @@ CREATE TABLE users (
 CREATE TABLE songs (
     id SERIAL PRIMARY KEY,
     external_id VARCHAR(100) NOT NULL,
-    source_platform VARCHAR(50) NOT NULL, -- (spotify, youtube, apple)
+    source_platform VARCHAR(50) NOT NULL, -- (apple, youtube, soundcloud)
     title VARCHAR(255) NOT NULL,
     artist VARCHAR(255) NOT NULL,
     album_name VARCHAR(255),
