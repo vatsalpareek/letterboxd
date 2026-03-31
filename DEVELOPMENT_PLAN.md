@@ -236,5 +236,5 @@ Spotify uses **Client Credentials Flow** for public data (no user login needed):
 ---
 
 ## Current Status
-> **Phase:** Not started  
-> **Next step:** Phase 1 — Project Setup
+> **Phase:** Phase 3 — Authentication System
+> **Next step:** Setup user sign up and login endpoints with JWT
