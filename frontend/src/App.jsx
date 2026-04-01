@@ -1,46 +1,79 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 import { Search, Heart, Disc, User, ArrowRight } from 'lucide-react';
 import { AuthContext } from './context/AuthContext';
 import Login from './components/Login';
+import ReviewSidebar from './components/ReviewSidebar';
 import './App.css';
 
 function App() {
-  const [selectedSong, setSelectedSong] = useState(null);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-
   const { token, user, logout } = useContext(AuthContext);
   const [search, setSearch] = useState("");
-
-  // Logic: If there is no token, show the Login page and nothing else.
-  if (!token) {
-    return <Login />;
-  }
   const [songs, setSongs] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedSong, setSelectedSong] = useState(null);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const handleSearch = async () => {
-    if (!search) return;
+  if (!token) return <Login />;
+
+  // 🚀 YouTube-style Autocomplete Brain
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (search.length > 2) {
+        try {
+          const res = await axios.get(`http://localhost:3000/api/songs/search?q=${encodeURIComponent(search)}`);
+          setSuggestions(res.data.songs.slice(0, 5));
+          setShowSuggestions(true);
+        } catch (err) {
+          console.error('Suggest error:', err);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const handleSearch = async (optionalQuery) => {
+    const query = optionalQuery || search;
+    if (!query) return;
     setLoading(true);
+    setShowSuggestions(false);
     try {
-      // Connect to your backend search endpoint
-      const res = await axios.get(`http://localhost:3000/api/songs/search?q=${encodeURIComponent(search)}`);
+      const res = await axios.get(`http://localhost:3000/api/songs/search?q=${encodeURIComponent(query)}`);
       setSongs(res.data.songs);
     } catch (err) {
       console.error('Search error:', err);
     } finally {
       setLoading(false);
     }
-    const openReview = (song) => {
-      setSelectedSong(song);
-      setSidebarOpen(true);
-    };
-
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch();
+  };
+
+  const selectSuggestion = (song) => {
+    setSearch(song.title);
+    handleSearch(song.title);
+  };
+
+  const openReview = (song) => {
+    setSelectedSong(song);
+    setSidebarOpen(true);
+  };
+
+  const upgradeImg = (url) => {
+    if (!url) return '';
+    return url.replace(/\/\d+x\d+bb\.jpg$/, '/1000x1000bb.jpg');
+  };
 
   return (
     <div className="brutal-outer">
-      {/* Heavy Border Header */}
       <header className="brutal-header">
         <div className="logo">
           <Disc size={32} strokeWidth={3} />
@@ -53,66 +86,83 @@ function App() {
       </header>
 
       <div className="brutal-container">
-        {/* Navigation Section */}
         <aside className="brutal-sidebar">
           <nav>
             <div className="nav-btn active">01 / FEED</div>
             <div className="nav-btn">02 / SEARCH</div>
             <div className="nav-btn">03 / FAVORITES</div>
-            <div className="nav-btn">04 / MY_PROFILE</div>
+            <div className="nav-btn">04 / MY PROFILE</div>
           </nav>
         </aside>
 
-        {/* Main Interface */}
         <main className="brutal-main">
           <div className="brutal-search-block">
             <Search size={22} />
-            <input
-              type="text"
-              placeholder="SEARCH CATALOG_..."
+            <input 
+              type="text" 
+              placeholder="SEARCH CATALOG MUSIC..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleKeyDown} 
+              onFocus={() => search.length > 2 && setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             />
-            <button className="search-btn" onClick={handleSearch} disabled={loading}>
-              {loading ? 'WAIT_...' : 'GO'} <ArrowRight size={16} />
+            <button className="search-btn" onClick={() => handleSearch()} disabled={loading}>
+              {loading ? 'WAIT...' : 'GO'} <ArrowRight size={16} />
             </button>
 
+            {/* 🔥 Autocomplete Dropdown 🔥 */}
+            {showSuggestions && suggestions.length > 0 && (
+                <div className="search-suggestions">
+                    {suggestions.map((song) => (
+                        <div className="suggestion-item" key={song.id} onClick={() => selectSuggestion(song)}>
+                            <img src={song.cover_url} alt="thumb" />
+                            <div>
+                                <div style={{ fontWeight: 800 }}>{song.title.toUpperCase()}</div>
+                                <div style={{ fontSize: '12px', opacity: 0.6 }}>{song.artist}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+          </div>
 
-            <section className="brutal-hero">
-              <h1>TRACK YOUR<br />LISTEN_LOGS.</h1>
-              <p>A HIGH-UTILITY MUSIC ARCHIVE SYSTEM.</p>
-            </section>
+          <section className="brutal-hero">
+            <h1>TRACK YOUR<br/>LISTEN LOGS.</h1>
+            <p>A HIGH-UTILITY MUSIC ARCHIVE SYSTEM.</p>
+          </section>
 
-            <div className="brutal-grid">
-              {songs.map((song) => (
+          <div className="brutal-grid">
+            {songs.map((song) => {
+              const albumWords = song.album_name?.split(' ') || [];
+              const shortAlbum = albumWords.slice(0, 2).join(' ').toUpperCase();
+              const displayAlbum = albumWords.length > 2 ? `${shortAlbum}...` : shortAlbum;
+
+              return (
                 <div className="brutal-card" key={song.id} onClick={() => openReview(song)}>
-
-                  <img
-                    className="card-image-box"
-                    src={song.cover_url.replace("100x100", "600x600")}
-                    alt={song.title}
-                  />
-
-
-
-
+                  <img className="card-image-box" src={upgradeImg(song.cover_url)} alt={song.title} />
                   <div className="card-info">
                     <h4>{song.title.toUpperCase()}</h4>
                     <p>{song.artist.toUpperCase()}</p>
                     <div className="card-footer">
-                      <span>ALBUM: {song.album_name?.toUpperCase() || '--'}</span>
-                      <button className="icon-btn"><Heart size={18} /></button>
+                      <span>ALBUM: {displayAlbum || 'SINGLE'}</span>
+                      <button className="icon-btn" onClick={(e) => { e.stopPropagation(); }}><Heart size={18} /></button>
                     </div>
                   </div>
                 </div>
-              ))}
-              <ReviewSidebar
-                song={selectedSong}
-                isOpen={isSidebarOpen}
-                onClose={() => setSidebarOpen(false)}
-              />
+              );
+            })}
+          </div>
+        </main>
+      </div>
 
-            </div>
+      <ReviewSidebar 
+        song={selectedSong} 
+        isOpen={isSidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+      />
+    </div>
+  );
+}
 
-
-            export default App;
+export default App;
