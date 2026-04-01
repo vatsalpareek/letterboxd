@@ -1,0 +1,114 @@
+.brutal-header {
+  height: 80px;
+  background: white;
+  border-bottom: 2px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  font-weight: 700;
+}
+
+.brutal-container {
+  display: flex;
+  min-height: calc(100vh - 80px);
+}
+
+.brutal-sidebar {
+  width: 250px;
+  border-right: 2px solid black;
+  padding: 40px 20px;
+}
+
+.nav-btn {
+  padding: 15px;
+  border: 2px solid black;
+  margin-bottom: 15px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.1s;
+}
+
+.nav-btn:hover, .nav-btn.active {
+  background: black;
+  color: white;
+  box-shadow: 4px 4px 0px 0px var(--utility-color);
+}
+
+.brutal-main {
+  flex: 1;
+  padding: 40px;
+}
+
+.brutal-search-block {
+  display: flex;
+  align-items: center;
+  border: 2px solid black;
+  background: white;
+  padding: 0 20px;
+  box-shadow: 6px 6px 0px 0px #000000;
+  margin-bottom: 50px;
+}
+
+.brutal-search-block input {
+  flex: 1;
+  padding: 20px;
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 18px;
+  outline: none;
+}
+
+.search-btn {
+  background: black;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.brutal-hero h1 {
+  font-size: 80px;
+  line-height: 0.9;
+  margin: 0 0 10px 0;
+  letter-spacing: -2px;
+}
+
+.brutal-card {
+  width: 280px;
+  border: 2px solid black;
+  background: white;
+  box-shadow: 6px 6px 0px 0px black;
+  transition: 0.1s;
+}
+
+.brutal-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0px 0px var(--utility-color);
+}
+
+.card-image-box {
+  background: #ddd;
+  height: 280px;
+  border-bottom: 2px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.card-info {
+  padding: 20px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
