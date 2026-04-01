@@ -20,6 +20,8 @@ function App() {
 
   // 🚀 YouTube-style Autocomplete Brain
   useEffect(() => {
+    if (loading) return; // 🔥 Don't suggest while a search is happening
+
     const timer = setTimeout(async () => {
       if (search.length > 2) {
         try {
@@ -36,13 +38,17 @@ function App() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, loading]);
 
   const handleSearch = async (optionalQuery) => {
     const query = optionalQuery || search;
     if (!query) return;
-    setLoading(true);
+
+    // 🔥 Kill suggestions immediately
     setShowSuggestions(false);
+    setSuggestions([]);
+
+    setLoading(true);
     try {
       const res = await axios.get(`http://localhost:3000/api/songs/search?q=${encodeURIComponent(query)}`);
       setSongs(res.data.songs);
@@ -58,6 +64,9 @@ function App() {
   };
 
   const selectSuggestion = (song) => {
+    // 🔥 Direct fix for suggestion selection
+    setShowSuggestions(false);
+    setSuggestions([]);
     setSearch(song.title);
     handleSearch(song.title);
   };
