@@ -1,3 +1,4 @@
+/* --- BRUTALIST GLOBAL ENGINE --- */
 .brutal-header {
   height: 80px;
   background: white;
@@ -52,7 +53,7 @@
 .nav-btn:hover, .nav-btn.active {
   background: black;
   color: white;
-  box-shadow: 4px 4px 0px 0px #ff3e00;
+  box-shadow: 4px 4px 0px 0px var(--utility-color);
 }
 
 .brutal-main {
@@ -68,6 +69,7 @@
   padding: 0 20px;
   box-shadow: 6px 6px 0px 0px black;
   margin-bottom: 50px;
+  position: relative;
 }
 
 .brutal-search-block input {
@@ -115,7 +117,7 @@
 
 .brutal-card:hover {
   transform: translate(-3px, -3px);
-  box-shadow: 12px 12px 0px 0px #ff3e00;
+  box-shadow: 12px 12px 0px 0px var(--utility-color);
   cursor: pointer;
 }
 
@@ -138,7 +140,7 @@
   margin-top: 15px;
 }
 
-/* 🚀 ANIMATED SIDEBAR STYLES 🚀 */
+/* --- 🚀 ANIMATED SIDEBAR ENGINE --- */
 .review-sidebar-overlay {
   position: fixed;
   inset: 0;
@@ -161,7 +163,7 @@
   border-left: 5px solid black;
   padding: 40px;
   height: 100vh;
-  box-shadow: -10px 0px 0px 0px #ff3e00;
+  box-shadow: -10px 0px 0px 0px var(--utility-color);
   display: flex;
   flex-direction: column;
   transform: translateX(110%);
@@ -193,78 +195,57 @@
 
 .close-btn:hover {
   transform: rotate(90deg) scale(1.1);
-  color: #ff3e00;
+  color: var(--utility-color);
 }
 
-.song-detail img {
-  width: 100px;
-  border: 2px solid black;
-  box-shadow: 4px 4px 0px 0px black;
-  margin-bottom: 10px;
-}
-
-.rating-selector {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  margin: 15px 0;
-}
-
-.rating-selector button {
-  padding: 15px;
-  border: 2px solid black;
+/* --- 🔥 SMART SEARCH SUGGESTIONS --- */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: -2px;
+  right: -2px;
   background: white;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.rating-selector button.active {
-  background: black;
-  color: white;
-}
-
-.brutal-review-panel textarea {
-  width: 100%;
   border: 2px solid black;
-  padding: 20px;
-  font-family: inherit;
-  font-weight: 700;
-  margin: 15px 0;
-  outline: none;
+  border-top: none;
+  z-index: 100;
+  box-shadow: 8px 8px 0px 0px black;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Industrial Scrollbar */
+.search-suggestions::-webkit-scrollbar {
+  width: 10px;
+}
+.search-suggestions::-webkit-scrollbar-track {
+  background: #f2f2f2;
+}
+.search-suggestions::-webkit-scrollbar-thumb {
+  background: black;
+  border: 1px solid white;
+}
+
+.suggestion-item {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  border-bottom: 2px solid #eee;
+}
+
+.suggestion-item:hover {
   background: #f2f2f2;
 }
 
-.brutal-review-panel button[type="submit"] {
-  width: 100%;
-  padding: 20px;
-  background: black;
-  color: white;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.logout-btn {
-  background: #ff3e00;
-  color: white;
+.suggestion-item img {
+  width: 50px;
+  height: 50px;
   border: 1px solid black;
-  padding: 5px 15px;
-  font-weight: 700;
-  cursor: pointer;
+  object-fit: cover;
 }
 
-.icon-btn {
-  background: white;
-  border: 2px solid black;
-  padding: 5px;
-  cursor: pointer;
-}
-
-.icon-btn:hover { background: black; color: white; }
-
+/* --- AUTH COMPONENT STYLES --- */
 .auth-fullscreen {
   height: 100vh;
   display: flex;
@@ -308,46 +289,20 @@
   cursor: pointer;
 }
 
-/* 🔥 SMART SEARCH SUGGESTIONS 🔥 */
-.brutal-search-block {
-  position: relative;
+.logout-btn {
+  background: var(--utility-color);
+  color: white;
+  border: 1px solid black;
+  padding: 5px 15px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.search-suggestions {
-  position: absolute;
-  top: 100%;
-  left: -2px;
-  right: -2px;
+.icon-btn {
   background: white;
   border: 2px solid black;
-  border-top: none;
-  z-index: 100;
-  box-shadow: 8px 8px 0px 0px black;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.suggestion-item {
-  padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
+  padding: 5px;
   cursor: pointer;
-  border-bottom: 2px solid #eee;
-  transition: background 0.1s;
 }
 
-.suggestion-item:last-child {
-  border-bottom: none;
-}
-
-.suggestion-item:hover {
-  background: #f2f2f2;
-}
-
-.suggestion-item img {
-  width: 50px;
-  height: 50px;
-  border: 1px solid black;
-  object-fit: cover;
-}
+.icon-btn:hover { background: black; color: white; }
