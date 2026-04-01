@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Search, Heart, Disc, User, ArrowRight } from 'lucide-react';
 import { AuthContext } from './context/AuthContext';
 import Login from './components/Login';
+import ReviewSidebar from './components/ReviewSidebar';
 import './App.css';
 
 function App() {
@@ -10,6 +11,8 @@ function App() {
   const [search, setSearch] = useState("");
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedSong, setSelectedSong] = useState(null);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   if (!token) return <Login />;
 
@@ -26,10 +29,15 @@ function App() {
     }
   };
 
+  const openReview = (song) => {
+    setSelectedSong(song);
+    setSidebarOpen(true);
+  };
+
   const upgradeImg = (url) => {
     if (!url) return '';
-    // This is the Sniper: it finds the /100x100 and replaces with /1000x1000
-    return url.replace(/\/\d+x\d+bb\.jpg$/, '/1000x1000bb.jpg');
+    // Snell's pattern sniper: forces high-quality resolution
+    return url.replace(/\/\d+x\d+bb\.jpg$/, '/800x800bb.jpg');
   };
 
   return (
@@ -76,7 +84,7 @@ function App() {
 
           <div className="brutal-grid">
             {songs.map((song) => (
-              <div className="brutal-card" key={song.id}>
+              <div className="brutal-card" key={song.id} onClick={() => openReview(song)}>
                 <img className="card-image-box" src={upgradeImg(song.cover_url)} alt={song.title} />
                 <div className="card-info">
                   <h4>{song.title.toUpperCase()}</h4>
@@ -91,6 +99,12 @@ function App() {
           </div>
         </main>
       </div>
+
+      <ReviewSidebar 
+        song={selectedSong} 
+        isOpen={isSidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+      />
     </div>
   );
 }

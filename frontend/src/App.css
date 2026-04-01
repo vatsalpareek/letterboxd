@@ -6,7 +6,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 40px;
-  font-weight: 700;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 800;
+  font-size: 24px;
 }
 
 .header-actions {
@@ -20,7 +27,6 @@
   background: #f2f2f2;
   border: 1px solid black;
   font-weight: 700;
-  font-size: 14px;
 }
 
 .brutal-container {
@@ -60,8 +66,8 @@
   border: 2px solid black;
   background: white;
   padding: 0 20px;
-  box-shadow: 6px 6px 0px 0px #000000;
-  margin-bottom: 20px;
+  box-shadow: 6px 6px 0px 0px black;
+  margin-bottom: 50px;
 }
 
 .brutal-search-block input {
@@ -87,7 +93,7 @@
 }
 
 .brutal-hero h1 {
-  font-size: 60px;
+  font-size: 80px;
   line-height: 0.9;
   margin: 0 0 10px 0;
   letter-spacing: -2px;
@@ -96,8 +102,8 @@
 .brutal-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
-  margin-top: 40px;
+  gap: 40px;
+  margin-top: 50px;
 }
 
 .brutal-card {
@@ -125,16 +131,91 @@
   padding: 20px;
 }
 
-.card-info h4 { margin: 0; font-size: 16px; }
-.card-info p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.7; }
-
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 15px;
-  font-size: 12px;
+}
+
+/* Sidebar Review Panel */
+.review-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1000;
+}
+
+.brutal-review-panel {
+  width: 500px;
+  background: white;
+  border-left: 5px solid black;
+  padding: 40px;
+  height: 100vh;
+  box-shadow: -10px 0px 0px 0px #ff3e00;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid black;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.song-detail img {
+  width: 100px;
+  border: 2px solid black;
+  box-shadow: 4px 4px 0px 0px black;
+  margin-bottom: 10px;
+}
+
+.rating-selector {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.rating-selector button {
+  padding: 15px;
+  border: 2px solid black;
+  background: white;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.rating-selector button.active {
+  background: black;
+  color: white;
+}
+
+.brutal-review-panel textarea {
+  width: 100%;
+  border: 2px solid black;
+  padding: 20px;
+  font-family: inherit;
+  font-weight: 700;
+  margin: 15px 0;
+  outline: none;
+  background: #f2f2f2;
+}
+
+.brutal-review-panel button[type="submit"] {
+  width: 100%;
+  padding: 20px;
+  background: black;
+  color: white;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 .logout-btn {
@@ -155,6 +236,7 @@
 
 .icon-btn:hover { background: black; color: white; }
 
+/* Auth Styles */
 .auth-fullscreen {
   height: 100vh;
   display: flex;
@@ -196,9 +278,4 @@
   border: none;
   font-weight: 700;
   cursor: pointer;
-}
-
-.auth-error {
-  color: #ff3e00;
-  font-weight: 700;
 }
