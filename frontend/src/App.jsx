@@ -29,6 +29,11 @@ function App() {
     }
   };
 
+  // 🚀 New Feature: Search on Enter Key
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch();
+  };
+
   const openReview = (song) => {
     setSelectedSong(song);
     setSidebarOpen(true);
@@ -70,6 +75,7 @@ function App() {
               placeholder="SEARCH CATALOG..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleKeyDown} 
             />
             <button className="search-btn" onClick={handleSearch} disabled={loading}>
               {loading ? 'WAIT...' : 'GO'} <ArrowRight size={16} />
@@ -82,19 +88,25 @@ function App() {
           </section>
 
           <div className="brutal-grid">
-            {songs.map((song) => (
-              <div className="brutal-card" key={song.id} onClick={() => openReview(song)}>
-                <img className="card-image-box" src={upgradeImg(song.cover_url)} alt={song.title} />
-                <div className="card-info">
-                  <h4>{song.title.toUpperCase()}</h4>
-                  <p>{song.artist.toUpperCase()}</p>
-                  <div className="card-footer">
-                    <span>ALBUM: {song.album_name?.split(' ').slice(0, 2).join(' ').toUpperCase()}...</span>
-                    <button className="icon-btn"><Heart size={18} /></button>
+            {songs.map((song) => {
+              const albumWords = song.album_name?.split(' ') || [];
+              const shortAlbum = albumWords.slice(0, 2).join(' ').toUpperCase();
+              const displayAlbum = albumWords.length > 2 ? `${shortAlbum}...` : shortAlbum;
+
+              return (
+                <div className="brutal-card" key={song.id} onClick={() => openReview(song)}>
+                  <img className="card-image-box" src={upgradeImg(song.cover_url)} alt={song.title} />
+                  <div className="card-info">
+                    <h4>{song.title.toUpperCase()}</h4>
+                    <p>{song.artist.toUpperCase()}</p>
+                    <div className="card-footer">
+                      <span>ALBUM: {displayAlbum || 'SINGLE'}</span>
+                      <button className="icon-btn" onClick={(e) => { e.stopPropagation(); }}><Heart size={18} /></button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </main>
       </div>
