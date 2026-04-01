@@ -51,6 +51,20 @@ const reviewModel = {
         await db.query('DELETE FROM reviews WHERE id = $1', [id]);
     },
 
+    // Get all reviews written by a specific user
+    findByUserId: async (userId) => {
+        const query = `
+            SELECT reviews.*, songs.title as song_title 
+            FROM reviews 
+            JOIN songs ON reviews.song_id = songs.id 
+            WHERE reviews.user_id = $1 
+            ORDER BY reviews.created_at DESC
+        `;
+        const result = await db.query(query, [userId]);
+        return result.rows;
+    },
+
+
     // Get average rating for a specific song
     getAverageRatingBySongId: async (songId) => {
         const result = await db.query(

@@ -18,6 +18,22 @@ const userModel = {
             [username, email, passwordHash]
         );
         return result.rows[0];
+    },
+    // Find a user by their unique ID
+    findById: async (id) => {
+        const result = await db.query('SELECT id, username, email, bio, created_at FROM users WHERE id = $1', [id]);
+        return result.rows[0];
+    },
+
+    // Get counts of reviews and lists for a profile
+    getUserStats: async (id) => {
+        const query = `
+            SELECT 
+                (SELECT COUNT(*) FROM reviews WHERE user_id = $1) as review_count,
+                (SELECT COUNT(*) FROM lists WHERE user_id = $1) as list_count
+        `;
+        const result = await db.query(query, [id]);
+        return result.rows[0];
     }
 };
 
