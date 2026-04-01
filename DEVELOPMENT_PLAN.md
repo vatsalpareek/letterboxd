@@ -161,12 +161,12 @@ Client → GET /profile (with Bearer token) → Middleware verifies → Controll
 
 ### Steps
 - [x] Write an `appleService.js` to handle fetching search results
-- [ ] Write `songsController.js` and `songsRoutes.js`
-- [ ] Test search endpoint
+- [x] Write `songsController.js` and `songsRoutes.js`
+- [x] Test search endpoint
 
 ---
 
-## Phase 5: Reviews & Ratings
+## Phase 5: Reviews & Ratings (COMPLETED)
 **Goal:** Let auth'd users write/edit/delete reviews and rate songs.
 
 ### Endpoints
@@ -182,13 +182,13 @@ Client → GET /profile (with Bearer token) → Middleware verifies → Controll
 - Only the review owner can edit or delete it
 
 ### Steps
-- [ ] Write `reviewsController.js`
-- [ ] Write `reviewsRoutes.js` (apply auth middleware to write routes)
-- [ ] Test CRUD operations via Postman
+- [x] Write `reviewsController.js`
+- [x] Write `reviewsRoutes.js` (apply auth middleware to write routes)
+- [x] Test CRUD operations via Postman
 
 ---
 
-## Phase 6: Lists / Playlists
+## Phase 6: Lists / Playlists (COMPLETED)
 **Goal:** Let users create curated lists of songs (like "My Top 50").
 
 ### Endpoints
@@ -199,13 +199,13 @@ Client → GET /profile (with Bearer token) → Middleware verifies → Controll
 - `GET /api/users/:userId/lists` — Get all lists by a user
 
 ### Steps
-- [ ] Write `listsController.js` and `listsRoutes.js`
-- [ ] Handle `list_items` inserts/deletes
-- [ ] Return list with songs (JOIN query)
+- [x] Write `listsController.js` and `listsRoutes.js`
+- [x] Handle `list_items` inserts/deletes
+- [x] Return list with songs (JOIN query)
 
 ---
 
-## Phase 7: User Profile
+## Phase 7: User Profile (COMPLETED)
 **Goal:** A basic profile endpoint showing user activity.
 
 ### Endpoints
@@ -215,9 +215,9 @@ Client → GET /profile (with Bearer token) → Middleware verifies → Controll
 - `GET /api/users/me` — Authenticated user's own profile (protected)
 
 ### Steps
-- [ ] Write `usersController.js` and `usersRoutes.js`
-- [ ] Aggregate review + list data per user
-- [ ] Protect `/me` route, make others public
+- [x] Write `usersController.js` and `usersRoutes.js`
+- [x] Aggregate review + list data per user
+- [x] Protect `/me` route, make others public
 
 ---
 
@@ -230,5 +230,5 @@ Client → GET /profile (with Bearer token) → Middleware verifies → Controll
 ---
 
 ## Current Status
-> **Phase:** Phase 4 — Song & Album Handling
-> **Next step:** Implement song/album routes and controllers using Apple iTunes API
+> **Phase:** 🏁 PROJECT COMPLETE 🏁
+> **Status:** All core backend features for Melodex are now functional and tested.
