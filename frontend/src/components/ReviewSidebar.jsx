@@ -20,24 +20,23 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            alert('REVIEW_LOGGED_SUCCESSFULLY');
+            alert('REVIEW LOGGED SUCCESSFULLY');
             onClose();
         } catch (err) {
-            alert(err.response?.data?.error || 'FAILED_TO_LOG_REVIEW');
+            alert(err.response?.data?.error || 'FAILED TO LOG REVIEW');
         } finally {
             setLoading(false);
         }
     };
 
-    // Note: We don't return null anymore; we use the 'open' class for animation
     return (
         <div className={`review-sidebar-overlay ${isOpen ? 'open' : ''}`} onClick={(e) => {
              if (e.target.className === 'review-sidebar-overlay open') onClose();
         }}>
             <div className="brutal-review-panel">
                 <header className="panel-header">
-                    <h3>04 / LOG_REVIEW</h3>
-                    <button onClick={onClose} className="close-btn" title="CLOSE_LOG"><X size={32} /></button>
+                    <h3>04 / LOG REVIEW</h3>
+                    <button onClick={onClose} className="close-btn" title="CLOSE"><X size={32} /></button>
                 </header>
 
                 {song && (
@@ -49,7 +48,7 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    <label>RATING (1-5)_</label>
+                    <label>RATING (1-5)</label>
                     <div className="rating-selector">
                         {[1, 2, 3, 4, 5].map(num => (
                             <button 
@@ -63,16 +62,16 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
                         ))}
                     </div>
 
-                    <label>YOUR_THOUGHTS_</label>
+                    <label>YOUR THOUGHTS</label>
                     <textarea 
-                        placeholder="TYPE_REVIEW_HERE..." 
+                        placeholder="TYPE REVIEW HERE..." 
                         rows="6"
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
                     />
 
                     <button type="submit" disabled={loading}>
-                        {loading ? 'ARCHIVING_...' : 'LOG_SEARCH_ENTRY'} <Save size={18} />
+                        {loading ? 'ARCHIVING...' : 'LOG SEARCH ENTRY'} <Save size={18} />
                     </button>
                 </form>
             </div>

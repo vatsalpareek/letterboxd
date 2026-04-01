@@ -36,7 +36,6 @@ function App() {
 
   const upgradeImg = (url) => {
     if (!url) return '';
-    // Snell's pattern sniper: forces high-quality resolution
     return url.replace(/\/\d+x\d+bb\.jpg$/, '/800x800bb.jpg');
   };
 
@@ -59,7 +58,7 @@ function App() {
             <div className="nav-btn active">01 / FEED</div>
             <div className="nav-btn">02 / SEARCH</div>
             <div className="nav-btn">03 / FAVORITES</div>
-            <div className="nav-btn">04 / MY_PROFILE</div>
+            <div className="nav-btn">04 / MY PROFILE</div>
           </nav>
         </aside>
 
@@ -68,17 +67,17 @@ function App() {
             <Search size={22} />
             <input 
               type="text" 
-              placeholder="SEARCH CATALOG_..." 
+              placeholder="SEARCH CATALOG..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
             <button className="search-btn" onClick={handleSearch} disabled={loading}>
-              {loading ? 'WAIT_...' : 'GO'} <ArrowRight size={16} />
+              {loading ? 'WAIT...' : 'GO'} <ArrowRight size={16} />
             </button>
           </div>
 
           <section className="brutal-hero">
-            <h1>TRACK YOUR<br/>LISTEN_LOGS.</h1>
+            <h1>TRACK YOUR<br/>LISTEN LOGS.</h1>
             <p>A HIGH-UTILITY MUSIC ARCHIVE SYSTEM.</p>
           </section>
 
