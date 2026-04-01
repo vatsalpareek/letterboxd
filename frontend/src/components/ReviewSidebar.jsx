@@ -41,36 +41,45 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
 
                 {song && (
                     <div className="song-detail">
-                        <img src={song.cover_url.replace(/\/\d+x\d+bb\.jpg$/, '/400x400bb.jpg')} alt={song.title} />
-                        <h2>{song.title.toUpperCase()}</h2>
-                        <p>{song.artist.toUpperCase()}</p>
+                        <img 
+                            src={song.cover_url.replace(/\/\d+x\d+bb\.jpg$/, '/400x400bb.jpg')} 
+                            alt={song.title} 
+                        />
+                        <div className="song-meta-box">
+                            <h2>{song.title.toUpperCase()}</h2>
+                            <p>{song.artist.toUpperCase()}</p>
+                        </div>
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit}>
-                    <label>RATING (1-5)</label>
-                    <div className="rating-selector">
-                        {[1, 2, 3, 4, 5].map(num => (
-                            <button 
-                                key={num} 
-                                type="button" 
-                                className={rating === num ? 'active' : ''}
-                                onClick={() => setRating(num)}
-                            >
-                                {num} <Star size={14} fill={rating >= num ? "black" : "none"} />
-                            </button>
-                        ))}
+                <form onSubmit={handleSubmit} className="brutal-form-stack">
+                    <div className="input-group">
+                        <label>RATING (1-5)</label>
+                        <div className="rating-selector">
+                            {[1, 2, 3, 4, 5].map(num => (
+                                <button 
+                                    key={num} 
+                                    type="button" 
+                                    className={rating === num ? 'active' : ''}
+                                    onClick={() => setRating(num)}
+                                >
+                                    {num} <Star size={14} fill={rating >= num ? "black" : "none"} />
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    <label>YOUR THOUGHTS</label>
-                    <textarea 
-                        placeholder="TYPE REVIEW HERE..." 
-                        rows="6"
-                        value={body}
-                        onChange={(e) => setBody(e.target.value)}
-                    />
+                    <div className="input-group">
+                        <label>YOUR THOUGHTS</label>
+                        <textarea 
+                            placeholder="TYPE REVIEW HERE..." 
+                            rows="6"
+                            value={body}
+                            onChange={(e) => setBody(e.target.value)}
+                        />
+                    </div>
 
-                    <button type="submit" disabled={loading}>
+                    <button type="submit" disabled={loading} className="log-btn">
                         {loading ? 'ARCHIVING...' : 'LOG SEARCH ENTRY'} <Save size={18} />
                     </button>
                 </form>

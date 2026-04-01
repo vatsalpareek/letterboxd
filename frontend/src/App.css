@@ -306,3 +306,45 @@
 }
 
 .icon-btn:hover { background: black; color: white; }
+
+/* 🔥 SIDEBAR LAYOUT POLISH 🔥 */
+.song-detail {
+  display: flex !important;
+  gap: 20px;
+  align-items: center;
+  border: 1px solid #eee;
+  padding: 15px;
+  background: #fdfdfd;
+  margin-bottom: 25px;
+}
+
+.song-detail img {
+  width: 120px !important;
+  height: 120px !important;
+  margin-bottom: 0 !important;
+}
+
+.song-meta-box h2 {
+  font-size: 24px;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.song-meta-box p {
+  opacity: 0.6;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.brutal-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
