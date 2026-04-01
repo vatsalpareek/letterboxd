@@ -15,12 +15,14 @@ function App() {
   const [selectedSong, setSelectedSong] = useState(null);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false); // 🔥 NEW LOCK GUARD
 
   if (!token) return <Login />;
 
   // 🚀 YouTube-style Autocomplete Brain
   useEffect(() => {
-    if (loading) return; // 🔥 Don't suggest while a search is happening
+    // 🧠 Logic: ONLY fetch if the user is physically typing! 🧠
+    if (!isUserTyping || loading) return; 
 
     const timer = setTimeout(async () => {
       if (search.length > 2) {
@@ -38,13 +40,14 @@ function App() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [search, loading]);
+  }, [search, loading, isUserTyping]);
 
   const handleSearch = async (optionalQuery) => {
     const query = optionalQuery || search;
     if (!query) return;
 
-    // 🔥 Kill suggestions immediately
+    // 🔥 Kill suggestions and LOCK the dropdown
+    setIsUserTyping(false); 
     setShowSuggestions(false);
     setSuggestions([]);
 
@@ -64,9 +67,11 @@ function App() {
   };
 
   const selectSuggestion = (song) => {
-    // 🔥 Direct fix for suggestion selection
+    // 🔥 COMPLETE LOCKDOWN 🔥
+    setIsUserTyping(false);
     setShowSuggestions(false);
     setSuggestions([]);
+    
     setSearch(song.title);
     handleSearch(song.title);
   };
@@ -111,17 +116,25 @@ function App() {
               type="text" 
               placeholder="SEARCH CATALOG MUSIC..." 
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setIsUserTyping(true); // 🔥 Unlock suggestions while typing
+              }}
               onKeyDown={handleKeyDown} 
-              onFocus={() => search.length > 2 && setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onFocus={() => {
+                if(search.length > 2) setIsUserTyping(true);
+              }}
+              onBlur={() => {
+                // Small delay to allow clicking suggestions
+                setTimeout(() => setIsUserTyping(false), 200);
+              }}
             />
             <button className="search-btn" onClick={() => handleSearch()} disabled={loading}>
               {loading ? 'WAIT...' : 'GO'} <ArrowRight size={16} />
             </button>
 
             {/* 🔥 Autocomplete Dropdown 🔥 */}
-            {showSuggestions && suggestions.length > 0 && (
+            {isUserTyping && showSuggestions && suggestions.length > 0 && (
                 <div className="search-suggestions">
                     {suggestions.map((song) => (
                         <div className="suggestion-item" key={song.id} onClick={() => selectSuggestion(song)}>
