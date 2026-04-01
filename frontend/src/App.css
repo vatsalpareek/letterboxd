@@ -9,6 +9,20 @@
   font-weight: 700;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-pill {
+  padding: 5px 15px;
+  background: #f2f2f2;
+  border: 1px solid black;
+  font-weight: 700;
+  font-size: 14px;
+}
+
 .brutal-container {
   display: flex;
   min-height: calc(100vh - 80px);
@@ -32,7 +46,7 @@
 .nav-btn:hover, .nav-btn.active {
   background: black;
   color: white;
-  box-shadow: 4px 4px 0px 0px var(--utility-color);
+  box-shadow: 4px 4px 0px 0px #ff3e00;
 }
 
 .brutal-main {
@@ -47,7 +61,7 @@
   background: white;
   padding: 0 20px;
   box-shadow: 6px 6px 0px 0px #000000;
-  margin-bottom: 50px;
+  margin-bottom: 20px;
 }
 
 .brutal-search-block input {
@@ -73,42 +87,118 @@
 }
 
 .brutal-hero h1 {
-  font-size: 80px;
+  font-size: 60px;
   line-height: 0.9;
   margin: 0 0 10px 0;
   letter-spacing: -2px;
 }
 
+.brutal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
 .brutal-card {
-  width: 280px;
   border: 2px solid black;
   background: white;
   box-shadow: 6px 6px 0px 0px black;
-  transition: 0.1s;
+  transition: all 0.1s ease-out;
 }
 
 .brutal-card:hover {
   transform: translate(-3px, -3px);
-  box-shadow: 9px 9px 0px 0px var(--utility-color);
+  box-shadow: 12px 12px 0px 0px #ff3e00;
+  cursor: pointer;
 }
 
 .card-image-box {
-  background: #ddd;
-  height: 280px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
   border-bottom: 2px solid black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
 }
 
 .card-info {
   padding: 20px;
 }
 
+.card-info h4 { margin: 0; font-size: 16px; }
+.card-info p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.7; }
+
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 15px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.logout-btn {
+  background: #ff3e00;
+  color: white;
+  border: 1px solid black;
+  padding: 5px 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.icon-btn {
+  background: white;
+  border: 2px solid black;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.icon-btn:hover { background: black; color: white; }
+
+.auth-fullscreen {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brutal-auth-box {
+  width: 400px;
+  background: white;
+  border: 2px solid black;
+  box-shadow: 10px 10px 0px 0px black;
+}
+
+.brutal-auth-box header {
+  padding: 15px;
+  border-bottom: 2px solid black;
+  font-weight: 700;
+}
+
+.brutal-auth-box form {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.brutal-auth-box input {
+  padding: 15px;
+  border: 2px solid black;
+  background: #f2f2f2;
+  font-weight: 700;
+}
+
+.brutal-auth-box button {
+  padding: 15px;
+  background: black;
+  color: white;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-error {
+  color: #ff3e00;
+  font-weight: 700;
 }
