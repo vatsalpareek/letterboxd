@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { List, Plus, Archive } from 'lucide-react';
+import { Archive, Plus, Trash2 } from 'lucide-react';
 
 const MyLists = () => {
     const { user, token } = useContext(AuthContext);
@@ -33,48 +33,61 @@ const MyLists = () => {
             });
             setLists([res.data.list, ...lists]);
             setName(""); setDesc("");
-            alert('COLLECTION_CREATED');
+            alert('New collection successfully created');
         } catch (err) { console.error('Create list error:', err); }
     };
 
-    if (loading) return <div className="brutal-loader">INDEXING_COLLECTIONS...</div>;
+    if (loading) return <div className="brutal-loader">Indexing collections...</div>;
 
     return (
         <div className="lists-view">
              <header className="view-header">
-                <h1>COLLECTIONS.</h1>
-                <p>ORGANIZE YOUR SOUND ARCHIVES.</p>
+                <h1>Collections</h1>
+                <p>Organize your sound archives.</p>
              </header>
 
              <form className="brutal-list-form" onSubmit={handleCreate}>
-                 <div className="form-title">00 / NEW_COLLECTION</div>
-                 <input 
-                    type="text" 
-                    placeholder="COLLECTION_NAME..." 
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                 />
+                 <div className="form-title">Create New Archive</div>
+                 <div className="form-row">
+                    <input 
+                        type="text" 
+                        placeholder="Name (e.g. Midnight Jazz)..." 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                    />
+                    <button type="submit" className="create-list-btn">
+                        Create <Plus size={18} />
+                    </button>
+                 </div>
                  <textarea 
-                    placeholder="DESCRIPTION (OPTIONAL)..."
+                    placeholder="Description (Optional)..."
                     value={desc}
                     onChange={(e) => setDesc(e.target.value)}
                  />
-                 <button type="submit">GENERATE_LIST <Plus size={18} /></button>
              </form>
 
              <div className="brutal-grid lists-grid">
                  {lists.map(list => (
                      <div className="brutal-card list-card" key={list.id}>
-                         <div className="list-icon-box"><Archive size={48} /></div>
+                         <div className="list-icon-box">
+                             <Archive size={48} strokeWidth={2.5} />
+                             <div className="items-count-badge">0 Items</div>
+                         </div>
                          <div className="card-info">
                              <h3>{list.name.toUpperCase()}</h3>
-                             <p>{list.description || 'NO_DESCRIPTION'}</p>
-                             <div className="list-count-pill">ITEMS_LOGGED: 0</div>
+                             <p>{list.description || 'No description provided'}</p>
+                             <div className="list-footer">
+                                <button className="icon-btn-danger"><Trash2 size={16} /></button>
+                             </div>
                          </div>
                      </div>
                  ))}
-                 {lists.length === 0 && <p className="empty-msg">START_BY_CREATING_YOUR_FIRST_COLLECTION.</p>}
+                 {lists.length === 0 && (
+                    <div className="empty-state-card">
+                        No collections found. Create one above.
+                    </div>
+                 )}
              </div>
         </div>
     );

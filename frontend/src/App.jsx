@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Search, Heart, Disc, User, ArrowRight, LayoutGrid, List } from 'lucide-react';
 import { AuthContext } from './context/AuthContext';
 import Login from './components/Login';
+import Profile from './components/Profile';
+import MyLists from './components/MyLists';
 import ReviewSidebar from './components/ReviewSidebar';
 import './App.css';
 
@@ -23,19 +25,21 @@ const Dashboard = ({ openReview }) => {
     fetchRecent();
   }, []);
 
-  if (loading) return <div className="brutal-loader">FETCHING_HISTORY...</div>;
+  if (loading) return <div className="brutal-loader">Fetching History...</div>;
 
   return (
     <div className="feed-container">
-      <h1>YOUR_LISTEN_LOGS.</h1>
+      <h1>All Entries</h1>
+      <p className="feed-sub">Real-time global musical catalog.</p>
       <div className="brutal-grid">
-        {reviews.length === 0 && <p className="empty-msg">NO_REVIEWS_LOGGED_YET.</p>}
+        {reviews.length === 0 && <p className="empty-msg">No reviews logged yet.</p>}
         {reviews.map((rev) => (
-          <div className="brutal-card review-card" key={rev.id}>
+          <div className="brutal-card review-card" key={rev.id} onClick={() => openReview(rev)}>
              <img src={rev.cover_url} alt={rev.title} className="card-image-box" />
              <div className="card-info">
                <div className="rating-pill">{'★'.repeat(rev.rating)}</div>
                <h4>{rev.title.toUpperCase()}</h4>
+               <div className="user-name-label">Logged by: {rev.username?.toUpperCase() || 'USER'}</div>
                <p className="artist">{rev.artist.toUpperCase()}</p>
                <p className="review-body">"{rev.body}"</p>
              </div>
@@ -94,7 +98,7 @@ const SearchPage = ({ openReview }) => {
         <Search size={22} />
         <input 
           type="text" 
-          placeholder="SEARCH CATALOG MUSIC..." 
+          placeholder="Search Catalog Music..." 
           value={search}
           onChange={(e) => { setSearch(e.target.value); setIsUserTyping(true); }}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()} 
@@ -102,7 +106,7 @@ const SearchPage = ({ openReview }) => {
           onBlur={() => setTimeout(() => setIsUserTyping(false), 200)}
         />
         <button className="search-btn" onClick={() => handleSearch()} disabled={loading}>
-          {loading ? 'WAIT...' : 'GO'} <ArrowRight size={16} />
+          {loading ? 'Wait...' : 'Go'} <ArrowRight size={16} />
         </button>
 
         {isUserTyping && showSuggestions && suggestions.length > 0 && (
@@ -128,7 +132,7 @@ const SearchPage = ({ openReview }) => {
               <h4>{song.title.toUpperCase()}</h4>
               <p>{song.artist.toUpperCase()}</p>
               <div className="card-footer">
-                <span>ALBUM: {song.album_name?.split(' ').slice(0, 2).join(' ').toUpperCase()}...</span>
+                <span>Album: {song.album_name?.split(' ').slice(0, 2).join(' ').toUpperCase()}...</span>
                 <button className="icon-btn" onClick={(e) => { e.stopPropagation(); }}><Heart size={18} /></button>
               </div>
             </div>
@@ -156,23 +160,23 @@ function App() {
     <Router>
       <div className="brutal-outer">
         <header className="brutal-header">
-           <div className="logo">
+           <div className="logo" onClick={() => window.location.href = '/'}>
              <Disc size={32} strokeWidth={3} />
              <span>MELODEX / REVIEWS</span>
            </div>
            <div className="header-actions">
-             <div className="user-pill">LOGGED IN: {user?.username?.toUpperCase() || 'USER'}</div>
-             <button className="logout-btn" onClick={logout}>00 / LOGOUT</button>
+             <div className="user-pill">Logged in: {user?.username?.toUpperCase() || 'USER'}</div>
+             <button className="logout-btn" onClick={logout}>Logout</button>
            </div>
         </header>
 
         <div className="brutal-container">
            <aside className="brutal-sidebar">
              <nav>
-               <NavLink to="/" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>01 / FEED</NavLink>
-               <NavLink to="/search" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>02 / SEARCH</NavLink>
-               <NavLink to="/lists" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>03 / MY LISTS</NavLink>
-               <NavLink to="/profile" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>04 / MY PROFILE</NavLink>
+               <NavLink to="/" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>01 / Feed</NavLink>
+               <NavLink to="/search" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>02 / Search</NavLink>
+               <NavLink to="/lists" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>03 / My Lists</NavLink>
+               <NavLink to="/profile" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>04 / My Profile</NavLink>
              </nav>
            </aside>
 
@@ -180,8 +184,8 @@ function App() {
              <Routes>
                <Route path="/" element={<Dashboard openReview={openReview} />} />
                <Route path="/search" element={<SearchPage openReview={openReview} />} />
-               <Route path="/lists" element={<div className="placeholder-view">UNDER_CONSTRUCTION: MY_LISTS</div>} />
-               <Route path="/profile" element={<div className="placeholder-view">UNDER_CONSTRUCTION: MY_PROFILE</div>} />
+               <Route path="/lists" element={<MyLists />} />
+               <Route path="/profile" element={<Profile />} />
                <Route path="*" element={<Navigate to="/" />} />
              </Routes>
            </main>

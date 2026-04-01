@@ -1,18 +1,34 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { X, Star, Save } from 'lucide-react';
+import { X, Star, Save, Library } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
 const ReviewSidebar = ({ song, isOpen, onClose }) => {
-    const { token } = useContext(AuthContext);
+    const { token, user } = useContext(AuthContext);
     const [rating, setRating] = useState(5);
     const [body, setBody] = useState("");
+    const [myLists, setMyLists] = useState([]);
+    const [selectedListId, setSelectedListId] = useState("");
     const [loading, setLoading] = useState(false);
+
+    // Fetch lists when sidebar opens
+    useEffect(() => {
+        if (isOpen && user) {
+            const fetchLists = async () => {
+                try {
+                    const res = await axios.get(`http://localhost:3000/api/lists/user/${user.id}`);
+                    setMyLists(res.data.lists || []);
+                } catch (err) { console.error('Error fetching lists:', err); }
+            };
+            fetchLists();
+        }
+    }, [isOpen, user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
+            // 1. Submit the Review
             await axios.post('http://localhost:3000/api/reviews', {
                 song_id: song.id,
                 rating: rating,
@@ -20,10 +36,20 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            alert('REVIEW LOGGED SUCCESSFULLY');
+
+            // 2. If a list is selected, add song to that list
+            if (selectedListId) {
+                await axios.post(`http://localhost:3000/api/lists/${selectedListId}/songs`, {
+                    song_id: song.id
+                }, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
+
+            alert('Entry Logged Successfully');
             onClose();
         } catch (err) {
-            alert(err.response?.data?.error || 'FAILED TO LOG REVIEW');
+            alert(err.response?.data?.error || 'Failed to log entry');
         } finally {
             setLoading(false);
         }
@@ -35,8 +61,8 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
         }}>
             <div className="brutal-review-panel">
                 <header className="panel-header">
-                    <h3>04 / LOG REVIEW</h3>
-                    <button onClick={onClose} className="close-btn" title="CLOSE"><X size={32} /></button>
+                    <h3>04 / Log Entry</h3>
+                    <button onClick={onClose} className="close-btn" title="Close"><X size={32} /></button>
                 </header>
 
                 {song && (
@@ -54,7 +80,7 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
 
                 <form onSubmit={handleSubmit} className="brutal-form-stack">
                     <div className="input-group">
-                        <label>RATING (1-5)</label>
+                        <label>Rating (1-5)</label>
                         <div className="rating-selector">
                             {[1, 2, 3, 4, 5].map(num => (
                                 <button 
@@ -70,17 +96,31 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
                     </div>
 
                     <div className="input-group">
-                        <label>YOUR THOUGHTS</label>
+                        <label>Add to Collection</label>
+                        <select 
+                            className="brutal-select"
+                            value={selectedListId}
+                            onChange={(e) => setSelectedListId(e.target.value)}
+                        >
+                            <option value="">None</option>
+                            {myLists.map(list => (
+                                <option key={list.id} value={list.id}>{list.name.toUpperCase()}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="input-group">
+                        <label>Your Thoughts</label>
                         <textarea 
-                            placeholder="TYPE REVIEW HERE..." 
-                            rows="6"
+                            placeholder="Type review here..." 
+                            rows="4"
                             value={body}
                             onChange={(e) => setBody(e.target.value)}
                         />
                     </div>
 
                     <button type="submit" disabled={loading} className="log-btn">
-                        {loading ? 'ARCHIVING...' : 'LOG SEARCH ENTRY'} <Save size={18} />
+                        {loading ? 'Archiving...' : 'Confirm Entry'} <Save size={18} />
                     </button>
                 </form>
             </div>

@@ -568,3 +568,136 @@ aside nav {
   display: inline-block;
   margin-top: 15px;
 }
+
+/* --- COLLECTION HUB STYLES --- */
+.lists-view .view-header h1 {
+  font-size: 60px;
+  line-height: 0.9;
+  margin-bottom: 5px;
+}
+
+.lists-view .view-header p {
+  font-weight: 800;
+  opacity: 0.5;
+  margin-bottom: 40px;
+}
+
+.brutal-list-form {
+  background: white;
+  border: 4px solid black;
+  padding: 30px;
+  box-shadow: 10px 10px 0px 0px black;
+  margin-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-title {
+  font-weight: 900;
+  font-size: 14px;
+  border-bottom: 2px solid black;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-row input {
+  flex: 1;
+  padding: 15px;
+  border: 2px solid black;
+  font-family: inherit;
+  font-weight: 700;
+  background: #f2f2f2;
+}
+
+.create-list-btn {
+  background: black !important;
+  color: white !important;
+  padding: 10px 30px !important;
+  font-weight: 900 !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brutal-list-form textarea {
+  padding: 15px;
+  border: 2px solid black;
+  font-family: inherit;
+  font-weight: 700;
+  background: #f2f2f2;
+  min-height: 60px;
+}
+
+.list-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.list-icon-box {
+  background: #eee;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 3px solid black;
+  position: relative;
+}
+
+.items-count-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: black;
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+}
+
+.list-footer {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.icon-btn-danger {
+  background: #ff4d4d;
+  color: white;
+  border: 2px solid black;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.empty-state-card {
+  background: #f2f2f2;
+  border: 5px dashed black;
+  padding: 50px;
+  text-align: center;
+  font-weight: 800;
+  grid-column: 1 / -1;
+}
+
+/* --- BRUTAL SELECT DROPDOWN --- */
+.brutal-select {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid black;
+  font-family: inherit;
+  font-weight: 800;
+  background: #f2f2f2;
+  cursor: pointer;
+}
+
+.brutal-select:focus {
+  outline: none;
+  background: white;
+  box-shadow: 4px 4px 0px 0px var(--utility-color);
+}

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { User, Disc, Star } from 'lucide-react';
+import { User, Calendar, Award } from 'lucide-react';
 
 const Profile = () => {
     const { user, token } = useContext(AuthContext);
-    const [stats, setStats] = useState({ count: 0, avg: 0 });
+    const [stats, setStats] = useState({ count: 0, lists: 0 });
     const [myReviews, setMyReviews] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -13,21 +13,23 @@ const Profile = () => {
         const fetchUserData = async () => {
             if (!user) return;
             try {
-                // Fetch user-specific reviews
-                const res = await axios.get(`http://localhost:3000/api/reviews/user/${user.id}`);
-                const reviews = res.data.reviews || [];
+                // Fetch reviews count
+                const revRes = await axios.get(`http://localhost:3000/api/reviews/user/${user.id}`);
+                const reviews = revRes.data.reviews || [];
                 setMyReviews(reviews);
 
-                const total = reviews.length;
-                const avg = total > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1) : 0;
-                setStats({ count: total, avg: avg });
+                // Fetch lists count
+                const listRes = await axios.get(`http://localhost:3000/api/lists/user/${user.id}`);
+                const lists = listRes.data.lists || [];
+
+                setStats({ count: reviews.length, lists: lists.length });
             } catch (err) { console.error('Profile error:', err); }
             finally { setLoading(false); }
         };
         fetchUserData();
     }, [user, token]);
 
-    if (loading) return <div className="brutal-loader">ANALYZING_STATS...</div>;
+    if (loading) return <div className="brutal-loader">Analyzing stats...</div>;
 
     return (
         <div className="profile-container">
@@ -37,19 +39,23 @@ const Profile = () => {
                     <h1>{user?.username?.toUpperCase()}</h1>
                     <div className="stats-row">
                         <div className="stat-pill">
-                           <span className="label">LOGGED_COUNT:</span>
+                           <span className="label">Total Reviews:</span>
                            <span className="value">{stats.count}</span>
                         </div>
                         <div className="stat-pill">
-                           <span className="label">AVG_RATING:</span>
-                           <span className="value">{stats.avg} / 5</span>
+                           <span className="label">Collections:</span>
+                           <span className="value">{stats.lists}</span>
+                        </div>
+                        <div className="stat-pill">
+                           <span className="label">Membership:</span>
+                           <span className="value">PRO</span>
                         </div>
                     </div>
                 </div>
             </header>
 
             <section className="profile-history">
-                <h2>YOUR_ARCHIVE.</h2>
+                <h2>Your Entry History</h2>
                 <div className="brutal-grid">
                     {myReviews.map((rev) => (
                         <div className="brutal-card" key={rev.id}>
@@ -62,7 +68,7 @@ const Profile = () => {
                             </div>
                         </div>
                     ))}
-                    {myReviews.length === 0 && <p>YOU_HAVE_NOT_LOGGED_ANYTHING_YET.</p>}
+                    {myReviews.length === 0 && <p className="empty-msg">You haven't logged anything yet.</p>}
                 </div>
             </section>
         </div>
