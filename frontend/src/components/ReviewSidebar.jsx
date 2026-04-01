@@ -29,21 +29,24 @@ const ReviewSidebar = ({ song, isOpen, onClose }) => {
         }
     };
 
-    if (!isOpen || !song) return null;
-
+    // Note: We don't return null anymore; we use the 'open' class for animation
     return (
-        <div className="review-sidebar-overlay">
+        <div className={`review-sidebar-overlay ${isOpen ? 'open' : ''}`} onClick={(e) => {
+             if (e.target.className === 'review-sidebar-overlay open') onClose();
+        }}>
             <div className="brutal-review-panel">
                 <header className="panel-header">
                     <h3>04 / LOG_REVIEW</h3>
-                    <button onClick={onClose} className="close-btn"><X /></button>
+                    <button onClick={onClose} className="close-btn" title="CLOSE_LOG"><X size={32} /></button>
                 </header>
 
-                <div className="song-detail">
-                    <img src={song.cover_url.replace(/\/\d+x\d+bb\.jpg$/, '/400x400bb.jpg')} alt={song.title} />
-                    <h2>{song.title.toUpperCase()}</h2>
-                    <p>{song.artist.toUpperCase()}</p>
-                </div>
+                {song && (
+                    <div className="song-detail">
+                        <img src={song.cover_url.replace(/\/\d+x\d+bb\.jpg$/, '/400x400bb.jpg')} alt={song.title} />
+                        <h2>{song.title.toUpperCase()}</h2>
+                        <p>{song.artist.toUpperCase()}</p>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
                     <label>RATING (1-5)_</label>

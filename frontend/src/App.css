@@ -138,14 +138,21 @@
   margin-top: 15px;
 }
 
-/* Sidebar Review Panel */
+/* 🚀 ANIMATED SIDEBAR STYLES 🚀 */
 .review-sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0); 
   display: flex;
   justify-content: flex-end;
   z-index: 1000;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.review-sidebar-overlay.open {
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
 }
 
 .brutal-review-panel {
@@ -157,6 +164,12 @@
   box-shadow: -10px 0px 0px 0px #ff3e00;
   display: flex;
   flex-direction: column;
+  transform: translateX(110%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.review-sidebar-overlay.open .brutal-review-panel {
+  transform: translateX(0);
 }
 
 .panel-header {
@@ -165,6 +178,22 @@
   border-bottom: 2px solid black;
   padding-bottom: 20px;
   margin-bottom: 30px;
+  align-items: center;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.close-btn:hover {
+  transform: rotate(90deg) scale(1.1);
+  color: #ff3e00;
 }
 
 .song-detail img {
@@ -236,7 +265,6 @@
 
 .icon-btn:hover { background: black; color: white; }
 
-/* Auth Styles */
 .auth-fullscreen {
   height: 100vh;
   display: flex;
