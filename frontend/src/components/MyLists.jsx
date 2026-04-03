@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Archive, Plus, Trash2 } from 'lucide-react';
 
 const MyLists = () => {
-    const { user, token } = useContext(AuthContext);
+    const { user, token, notify } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [lists, setLists] = useState([]);
     const [name, setName] = useState("");
     const [desc, setDesc] = useState("");
@@ -26,15 +28,33 @@ const MyLists = () => {
         e.preventDefault();
         try {
             const res = await axios.post('http://localhost:3000/api/lists', {
-                name,
+                title: name,
                 description: desc
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setLists([res.data.list, ...lists]);
             setName(""); setDesc("");
-            alert('New collection successfully created');
-        } catch (err) { console.error('Create list error:', err); }
+            notify('Collection created successfully');
+        } catch (err) { 
+            notify('Failed to create collection', 'error');
+            console.error('Create list error:', err); 
+        }
+    };
+
+    const handleDelete = async (e, listId) => {
+        e.stopPropagation();
+        if (!window.confirm('PERMANENTLY_DELETE_COLLECTION?')) return;
+        try {
+            await axios.delete(`http://localhost:3000/api/lists/${listId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setLists(lists.filter(l => l.id !== listId));
+            notify('Collection deleted');
+        } catch (err) { 
+            notify('Could not delete archive', 'error');
+            console.error('Delete error:', err); 
+        }
     };
 
     if (loading) return <div className="brutal-loader">Indexing collections...</div>;
@@ -69,25 +89,25 @@ const MyLists = () => {
 
              <div className="brutal-grid lists-grid">
                  {lists.map(list => (
-                     <div className="brutal-card list-card" key={list.id}>
+                     <div className="brutal-card list-card" key={list.id} onClick={() => navigate(`/lists/${list.id}`)}>
                          <div className="list-icon-box">
                              <Archive size={48} strokeWidth={2.5} />
-                             <div className="items-count-badge">0 Items</div>
+                             <div className="items-count-badge">ARCHIVE</div>
                          </div>
                          <div className="card-info">
-                             <h3>{list.name.toUpperCase()}</h3>
+                             <h3>{list.title?.toUpperCase()}</h3>
                              <p>{list.description || 'No description provided'}</p>
                              <div className="list-footer">
-                                <button className="icon-btn-danger"><Trash2 size={16} /></button>
+                                <button className="icon-btn-danger" onClick={(e) => handleDelete(e, list.id)}><Trash2 size={16} /></button>
                              </div>
                          </div>
                      </div>
-                 ))}
-                 {lists.length === 0 && (
-                    <div className="empty-state-card">
-                        No collections found. Create one above.
-                    </div>
-                 )}
+                  ))}
+                  {lists.length === 0 && (
+                     <div className="empty-state-card">
+                         No collections found. Create one above.
+                     </div>
+                  )}
              </div>
         </div>
     );

@@ -1,25 +1,31 @@
-/* frontend/src/components/Login.jsx */
+/* frontend/src/components/Signup.jsx */
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { LogIn, ArrowRight } from 'lucide-react';
+import { UserPlus, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Login = ({ onSwitch }) => {
+const Signup = ({ onBackToLogin }) => {
     const { login } = useContext(AuthContext);
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
+        setError('');
         try {
-            // Talk to your backend on Port 3000!
-            const res = await axios.post('http://localhost:3000/api/auth/login', {
-                email, password
+            const res = await axios.post('http://localhost:3000/api/auth/signup', {
+                username, email, password
             });
             login(res.data.token, res.data.user);
         } catch (err) {
-            setError(err.response?.data?.error || 'CHECK_CREDENTIALS...');
+            setError(err.response?.data?.error || 'REGISTRATION_FAILED');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -27,10 +33,14 @@ const Login = ({ onSwitch }) => {
         <div className="auth-fullscreen">
             <div className="brutal-auth-box">
                 <header>
-                    <LogIn size={20} />
-                    <span>SYSTEM_LOGIN</span>
+                    <UserPlus size={20} />
+                    <span>SYSTEM_REGISTRATION</span>
                 </header>
                 <form onSubmit={handleSubmit}>
+                    <input
+                        type="text" placeholder="CHOOSE_USERNAME" required
+                        value={username} onChange={(e) => setUsername(e.target.value)}
+                    />
                     <input
                         type="email" placeholder="EMAIL_ADDRESS" required
                         value={email} onChange={(e) => setEmail(e.target.value)}
@@ -40,9 +50,11 @@ const Login = ({ onSwitch }) => {
                         value={password} onChange={(e) => setPassword(e.target.value)}
                     />
                     {error && <div className="auth-error">{error}</div>}
-                    <button type="submit">AUTHORIZE <ArrowRight size={18} /></button>
-                    <div className="auth-switch" onClick={onSwitch}>
-                         Need a passport? CREATE_NEW_ACCOUNT
+                    <button type="submit" disabled={submitting}>
+                        {submitting ? 'PROCESSING...' : 'INITIALIZE_ACCOUNT'} <ArrowRight size={18} />
+                    </button>
+                    <div className="auth-switch" onClick={onBackToLogin}>
+                         Already have a passport? LOGIN_HERE
                     </div>
                 </form>
             </div>
@@ -50,4 +62,4 @@ const Login = ({ onSwitch }) => {
     );
 };
 
-export default Login;
+export default Signup;

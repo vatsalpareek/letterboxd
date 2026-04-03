@@ -1,26 +1,26 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { X as XIcon, Star as StarIcon, Save as SaveIcon, Calendar as CalendarIcon, Edit3 as EditIcon } from 'lucide-react';
+import { X as XIcon, Star as StarIcon, Save as SaveIcon, Music as MusicIcon, Calendar as CalendarIcon, Edit3 as EditIcon } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import BrutalSelect from './BrutalSelect';
 
-const ReviewSidebar = ({ song, isOpen, onClose, openAlbum }) => {
+const AlbumSidebar = ({ album, isOpen, onClose, onOpenSongReview }) => {
     const { token, notify } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [tracks, setTracks] = useState([]);
+    const [loadingTracks, setLoadingTracks] = useState(false);
+    
     const [rating, setRating] = useState(5);
     const [body, setBody] = useState("");
     const [submitting, setSubmitting] = useState(false);
-    const [myLists, setMyLists] = useState([]);
-    const [selectedList, setSelectedList] = useState("");
     const [existingReviewId, setExistingReviewId] = useState(null);
 
-    // CHECK FOR EXISTING REVIEW WHEN SONG/DRAWER OPENS
+    // CHECK FOR EXISTING REVIEW WHEN ALBUM/DRAWER OPENS
     useEffect(() => {
-        if (song && isOpen && token) {
+        if (album && isOpen && token) {
             const checkReview = async () => {
                 try {
-                    const res = await axios.get(`http://localhost:3000/api/reviews/check/song/${song.id}`, {
+                    const res = await axios.get(`http://localhost:3000/api/reviews/check/album/${album.id}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (res.data.exists) {
@@ -36,23 +36,23 @@ const ReviewSidebar = ({ song, isOpen, onClose, openAlbum }) => {
             };
             checkReview();
         }
-    }, [song?.id, isOpen, token]);
+    }, [album?.id, isOpen, token]);
 
     useEffect(() => {
-        if (isOpen && token) {
-            const fetchLists = async () => {
+        if (isOpen && album) {
+            const fetchTracks = async () => {
+                setLoadingTracks(true);
                 try {
-                    const res = await axios.get('http://localhost:3000/api/lists/user/me', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    setMyLists(res.data.lists || []);
-                } catch (err) { console.error('Error fetching lists:', err); }
-            };
-            fetchLists();
+                    const res = await axios.get(`http://localhost:3000/api/songs/album/${album.external_id || album.id}`);
+                    setTracks(res.data.tracks || []);
+                } catch (err) { console.error('Error fetching tracks:', err); }
+                finally { setLoadingTracks(false); }
+            }
+            fetchTracks();
         }
-    }, [isOpen, token]);
+    }, [isOpen, album]);
 
-    const handleLog = async (e) => {
+    const handleAlbumReview = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
@@ -64,29 +64,21 @@ const ReviewSidebar = ({ song, isOpen, onClose, openAlbum }) => {
                 }, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                notify('Entry Updated Successfully!');
+                notify('Album Review Updated!');
             } else {
                 // CREATE NEW
                 await axios.post('http://localhost:3000/api/reviews', {
-                    song_id: song.id,
+                    album_id: album.id,
                     rating: rating,
                     body: body
                 }, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                notify('Entry Logged Successfully!');
-            }
-
-            if (selectedList && !existingReviewId) {
-                await axios.post(`http://localhost:3000/api/lists/${selectedList}/songs`, {
-                    song_id: song.id
-                }, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                notify('Album Review Logged!');
             }
             onClose();
         } catch (err) {
-            notify(err.response?.data?.error || 'Failed to process entry', 'error');
+            notify(err.response?.data?.error || 'Failed to process album review', 'error');
         } finally {
             setSubmitting(false);
         }
@@ -94,25 +86,18 @@ const ReviewSidebar = ({ song, isOpen, onClose, openAlbum }) => {
 
     const goToArtist = (e) => {
         if (e) e.stopPropagation();
-        const aId = song.artist_id || song.artistId;
+        const aId = album.artist_id || album.artistId;
         if (aId) {
             onClose();
             navigate(`/artist/${aId}`);
         }
     };
 
-    const goToAlbum = (e) => {
-        if (e) e.stopPropagation();
-        const albId = song.album_id || song.albumId;
-        if (albId) {
-            onClose();
-            openAlbum({ ...song, id: albId, external_id: albId });
-        }
-    };
+    if (!isOpen || !album) return null;
 
-    if (!isOpen || !song) return null;
-
-    const year = song.release_date ? song.release_date.split('-')[0] : '----';
+    const isSingle = (album.track_count || album.trackCount) === 1;
+    const upgradeImg = (url) => url?.replace(/\/\d+x\d+bb\.jpg$/, '/1000x1000bb.jpg') || '';
+    const year = (album.release_date || album.year)?.split('-')[0] || '----';
 
     return (
         <div className={`review-sidebar-overlay ${isOpen ? 'open' : ''}`} onClick={(e) => {
@@ -120,35 +105,47 @@ const ReviewSidebar = ({ song, isOpen, onClose, openAlbum }) => {
         }}>
             <div className="brutal-review-panel">
                 <header className="panel-header">
-                    <h3>{existingReviewId ? 'Modify Entry' : 'Log Entry'}</h3>
-                    <button onClick={onClose} className="close-btn" title="Close"><XIcon size={32} /></button>
+                    <h3>{existingReviewId ? 'Modify Record' : (isSingle ? 'Log SINGLE / EP' : 'Log ALBUM')}</h3>
+                    <button onClick={onClose} className="close-btn"><XIcon size={32} /></button>
                 </header>
 
                 <div className="song-detail-sidebar">
                     <img 
-                        src={song.cover_url?.replace(/\/\d+x\d+bb\.jpg$/, '/400x400bb.jpg') || ""} 
-                        alt={song.title || 'SONG'} 
-                        className="sidebar-art"
+                      src={upgradeImg(album.cover_url)} 
+                      alt={album.title || 'ALBUM'} 
+                      className="sidebar-art"
                     />
                     <div className="sidebar-meta">
                         <div className="sidebar-type-row">
-                          <span className="type-badge-mini">SONG</span>
+                          <span className="type-badge-mini">{isSingle ? 'SINGLE' : 'ALBUM'}</span>
                           <span className="sidebar-year-badge"><CalendarIcon size={10}/> {year}</span>
                         </div>
-                        <h2>{(song.title || 'Untitled').toUpperCase()}</h2>
-                        <p className="clickable-text" onClick={goToArtist}>{(song.artist || 'Unknown Artist').toUpperCase()}</p>
-                        {song.album_name && (
-                            <p className="clickable-text" style={{fontSize: '12px', marginTop: '5px', opacity: 0.7}} onClick={goToAlbum}>
-                                ALBUM: {song.album_name.toUpperCase()}
-                            </p>
-                        )}
+                        <h2>{(album.title || 'Untitled').toUpperCase()}</h2>
+                        <p className="clickable-text" onClick={goToArtist}>{(album.artist || 'Unknown Artist').toUpperCase()}</p>
                     </div>
                 </div>
 
                 <div className="sidebar-scroll-area">
-                    <form onSubmit={handleLog} className="brutal-form-stack">
+                    {!isSingle && (
+                        <div className="tracklist-section">
+                            <h4>TRACKLIST</h4>
+                            {loadingTracks ? <p>Loading tracks...</p> : (
+                                <div className="track-list">
+                                    {(tracks || []).map((track, idx) => (
+                                        <div key={track.id || idx} className="track-item" onClick={() => onOpenSongReview?.(track)}>
+                                            <span className="track-num">{idx + 1}</span>
+                                            <span className="track-name">{track.title || 'Untitled'}</span>
+                                            <MusicIcon size={12} className="track-icon" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleAlbumReview} className="brutal-form-stack album-form">
                         <div className="input-group">
-                            <label>RATING</label>
+                            <label>Rate {isSingle ? 'Single' : 'Whole Album'}</label>
                             <div className="rating-selector">
                                 {[1, 2, 3, 4, 5].map(num => (
                                     <button 
@@ -163,33 +160,18 @@ const ReviewSidebar = ({ song, isOpen, onClose, openAlbum }) => {
                             </div>
                         </div>
 
-                        {!existingReviewId && (
-                            <div className="input-group">
-                                <label>ADD TO COLLECTION</label>
-                                <BrutalSelect 
-                                    value={selectedList}
-                                    onChange={(id) => setSelectedList(id)}
-                                    options={[
-                                        { value: "", label: "None" },
-                                        ...(myLists || []).map(l => ({ value: l.id, label: l.title }))
-                                    ]}
-                                    placeholder="SELECT_COLLECTION"
-                                />
-                            </div>
-                        )}
-
                         <div className="input-group">
-                            <label>REVIEW</label>
+                            <label>Review</label>
                             <textarea 
-                                placeholder="Tell the world what you think..." 
-                                rows="4"
+                                placeholder={isSingle ? "What do you think of this single?" : "What did you think of the whole project?"}
+                                rows="3"
                                 value={body}
                                 onChange={(e) => setBody(e.target.value)}
                             />
                         </div>
 
-                        <button type="submit" disabled={submitting} className="log-btn">
-                            {submitting ? 'Archiving...' : (existingReviewId ? 'Save Changes' : 'Record Entry')} 
+                        <button type="submit" disabled={submitting} className="log-btn" style={{marginTop: '20px'}}>
+                            {submitting ? 'Archiving...' : (existingReviewId ? 'Update Record' : 'Record Entry')} 
                             {existingReviewId ? <EditIcon size={18} /> : <SaveIcon size={18} />}
                         </button>
                     </form>
@@ -199,4 +181,4 @@ const ReviewSidebar = ({ song, isOpen, onClose, openAlbum }) => {
     );
 };
 
-export default ReviewSidebar;
+export default AlbumSidebar;

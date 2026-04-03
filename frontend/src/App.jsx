@@ -1,18 +1,38 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Search, Heart, Disc, User, ArrowRight, LayoutGrid, List } from 'lucide-react';
+import { Search as SearchIcon, Disc as DiscIcon, User as UserIcon, ArrowRight as ArrowRightIcon, Moon, Sun } from 'lucide-react';
 import { AuthContext } from './context/AuthContext';
+import { ThemeContext } from './context/ThemeContext';
 import Login from './components/Login';
 import Profile from './components/Profile';
 import MyLists from './components/MyLists';
+import ListDetail from './components/ListDetail';
+import ArtistProfile from './components/ArtistProfile';
 import ReviewSidebar from './components/ReviewSidebar';
+import AlbumSidebar from './components/AlbumSidebar';
+import Signup from './components/Signup';
+import NotificationToast from './components/NotificationToast';
 import './App.css';
 
-// --- DASHBOARD COMPONENT (The Live Feed) ---
-const Dashboard = ({ openReview }) => {
+// GLOBAL SESSION INTERCEPTOR
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
+      localStorage.clear();
+      window.location.href = '/';
+    }
+    return Promise.reject(error);
+  }
+);
+
+const upgradeImg = (url) => url?.replace(/\/\d+x\d+bb\.jpg$/, '/1000x1000bb.jpg') || '';
+
+const Dashboard = ({ openReview, openAlbum }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRecent = async () => {
@@ -25,24 +45,39 @@ const Dashboard = ({ openReview }) => {
     fetchRecent();
   }, []);
 
-  if (loading) return <div className="brutal-loader">Fetching History...</div>;
+  if (loading) return (
+    <div className="feed-container">
+      <h1>All Entries</h1>
+      <div className="brutal-grid">
+        {[1,2,3,4,5,6].map(i => (
+          <div className="skeleton-card" key={i}>
+            <div className="skeleton-img"></div>
+            <div className="skeleton-line"></div>
+            <div className="skeleton-line short"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="feed-container">
       <h1>All Entries</h1>
       <p className="feed-sub">Real-time global musical catalog.</p>
       <div className="brutal-grid">
-        {reviews.length === 0 && <p className="empty-msg">No reviews logged yet.</p>}
-        {reviews.map((rev) => (
-          <div className="brutal-card review-card" key={rev.id} onClick={() => openReview(rev)}>
-             <img src={rev.cover_url} alt={rev.title} className="card-image-box" />
-             <div className="card-info">
-               <div className="rating-pill">{'★'.repeat(rev.rating)}</div>
-               <h4>{rev.title.toUpperCase()}</h4>
-               <div className="user-name-label">Logged by: {rev.username?.toUpperCase() || 'USER'}</div>
-               <p className="artist">{rev.artist.toUpperCase()}</p>
-               <p className="review-body">"{rev.body}"</p>
-             </div>
+        {(reviews || []).map((rev) => (
+          <div className="brutal-card" key={`rev_${rev.id}`} onClick={() => {
+            if (rev.item_type === 'song') openReview({ ...rev, id: rev.song_id });
+            else openAlbum({ ...rev, id: rev.album_id, external_id: rev.external_id });
+          }}>
+            <img src={upgradeImg(rev.cover_url)} alt={rev.title} className="card-image-box" />
+            <div className="card-info">
+              <span className="type-badge-mini">{(rev.item_type || 'Unknown').toUpperCase()}</span>
+              <div className="rating-pill">{'★'.repeat(rev.rating || 0)}</div>
+              <h4>{(rev.title || 'Untitled').toUpperCase()}</h4>
+              <p className="artist-label">{(rev.artist || 'Unknown').toUpperCase()}</p>
+              <p className="review-body">"{rev.body || ""}"</p>
+            </div>
           </div>
         ))}
       </div>
@@ -50,91 +85,100 @@ const Dashboard = ({ openReview }) => {
   );
 };
 
-// --- SEARCH ENGINE COMPONENT ---
-const SearchPage = ({ openReview }) => {
-  const [search, setSearch] = useState("");
-  const [songs, setSongs] = useState([]);
+const SearchPage = ({ openReview, openAlbum }) => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [results, setResults] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isUserTyping, setIsUserTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [filterType, setFilterType] = useState('all');
 
   useEffect(() => {
-    if (!isUserTyping || loading) return; 
+    if (!isTyping) return;
     const timer = setTimeout(async () => {
-      if (search.length > 2) {
+      if (searchQuery.length > 3) {
         try {
-          const res = await axios.get(`http://localhost:3000/api/songs/search?q=${encodeURIComponent(search)}`);
-          setSuggestions(res.data.songs.slice(0, 5));
-          setShowSuggestions(true);
+          const res = await axios.get(`http://localhost:3000/api/songs/search?q=${encodeURIComponent(searchQuery)}`);
+          setSuggestions((res.data.results || []).slice(0, 5));
         } catch (err) { console.error('Suggest error:', err); }
-      } else { setSuggestions([]); setShowSuggestions(false); }
+      } else { setSuggestions([]); }
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, loading, isUserTyping]);
+  }, [searchQuery, isTyping]);
 
-  const handleSearch = async (optionalQuery) => {
-    const query = optionalQuery || search;
-    if (!query) return;
-    setIsUserTyping(false); setShowSuggestions(false); setSuggestions([]);
+  const handleSearch = async (val) => {
+    const q = val || searchQuery;
+    if (!q) return;
     setLoading(true);
+    setIsTyping(false); // Stop suggestions
+    setSuggestions([]); // Clear existing
     try {
-      const res = await axios.get(`http://localhost:3000/api/songs/search?q=${encodeURIComponent(query)}`);
-      setSongs(res.data.songs);
-    } catch (err) { console.error('Search error:', err); } 
+      const res = await axios.get(`http://localhost:3000/api/songs/search?q=${encodeURIComponent(q)}`);
+      setResults(res.data.results || []);
+    } catch (err) { console.error('Search error:', err); }
     finally { setLoading(false); }
   };
 
-  const selectSuggestion = (song) => {
-    setIsUserTyping(false); setShowSuggestions(false); setSuggestions([]);
-    setSearch(song.title); handleSearch(song.title);
-  };
-
-  const upgradeImg = (url) => url?.replace(/\/\d+x\d+bb\.jpg$/, '/1000x1000bb.jpg') || '';
+  const filtered = filterType === 'all' ? results : results.filter(i => i.type === filterType);
 
   return (
     <div className="search-container">
       <div className="brutal-search-block">
-        <Search size={22} />
-        <input 
-          type="text" 
-          placeholder="Search Catalog Music..." 
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setIsUserTyping(true); }}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()} 
-          onFocus={() => search.length > 2 && !loading && setIsUserTyping(true)}
-          onBlur={() => setTimeout(() => setIsUserTyping(false), 200)}
+        <SearchIcon size={22} />
+        <input
+          type="text" placeholder="Search for music, artists, or albums..."
+          value={searchQuery} 
+          onChange={(e) => { setSearchQuery(e.target.value); setIsTyping(true); }}
+          onFocus={() => { if (searchQuery.length > 3) setIsTyping(true); }}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          onBlur={() => setTimeout(() => { setIsTyping(false); setSuggestions([]); }, 200)}
         />
-        <button className="search-btn" onClick={() => handleSearch()} disabled={loading}>
-          {loading ? 'Wait...' : 'Go'} <ArrowRight size={16} />
-        </button>
+        <button className="search-btn" onClick={() => handleSearch()}>{loading ? 'WAIT' : 'GO'}</button>
 
-        {isUserTyping && showSuggestions && suggestions.length > 0 && (
-            <div className="search-suggestions">
-                {suggestions.map((song) => (
-                    <div className="suggestion-item" key={song.id} onClick={() => selectSuggestion(song)}>
-                        <img src={song.cover_url} alt="thumb" />
-                        <div>
-                            <div style={{ fontWeight: 800 }}>{song.title.toUpperCase()}</div>
-                            <div style={{ fontSize: '12px', opacity: 0.6 }}>{song.artist}</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+        {suggestions.length > 0 && (
+          <div className="search-suggestions">
+            {suggestions.map(s => (
+              <div className="suggestion-item" key={`s_${s.id}`} onClick={() => { setSearchQuery(s.title); handleSearch(s.title); }}>
+                <img src={s.cover_url} alt="t" />
+                <div>
+                  <div style={{ fontWeight: 900 }}>{(s.title || 'Untitled').toUpperCase()}</div>
+                  <div style={{ fontSize: '10px', opacity: 0.5 }}>{(s.artist || 'Unknown').toUpperCase()}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
+      {results.length > 0 && (
+        <div className="brutal-tabs">
+          {['all', 'artist', 'album', 'song'].map(t => (
+            <button key={t} className={`tab-trigger ${filterType === t ? 'active' : ''}`} onClick={() => setFilterType(t)}>
+              {t.toUpperCase()} ({t === 'all' ? results.length : results.filter(r => r.type === t).length})
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="brutal-grid">
-        {songs.map((song) => (
-          <div className="brutal-card" key={song.id} onClick={() => openReview(song)}>
-            <img className="card-image-box" src={upgradeImg(song.cover_url)} alt={song.title} />
+        {loading ? [1,2,3,4,5,6].map(i => (
+          <div className="skeleton-card" key={i}>
+            <div className="skeleton-img"></div>
+            <div className="skeleton-line"></div>
+            <div className="skeleton-line short"></div>
+          </div>
+        )) : filtered.map((item) => (
+          <div className="brutal-card" key={`g_${item.type}_${item.id}`} onClick={() => {
+            if (item.type === 'song') openReview(item);
+            else if (item.type === 'album') openAlbum(item);
+            else if (item.type === 'artist') navigate(`/artist/${item.id}`);
+          }}>
+            <img className="card-image-box" src={upgradeImg(item.cover_url)} alt={item.title} />
             <div className="card-info">
-              <h4>{song.title.toUpperCase()}</h4>
-              <p>{song.artist.toUpperCase()}</p>
-              <div className="card-footer">
-                <span>Album: {song.album_name?.split(' ').slice(0, 2).join(' ').toUpperCase()}...</span>
-                <button className="icon-btn" onClick={(e) => { e.stopPropagation(); }}><Heart size={18} /></button>
-              </div>
+              <span className="type-badge-mini">{(item.type || 'item').toUpperCase()}</span>
+              <h4>{(item.title || 'Untitled').toUpperCase()}</h4>
+              <p className="artist-label">{(item.artist || 'Unknown').toUpperCase()}</p>
             </div>
           </div>
         ))}
@@ -143,59 +187,67 @@ const SearchPage = ({ openReview }) => {
   );
 };
 
-// --- MAIN APP WRAPPER WITH ROUTER ---
 function App() {
   const { token, user, logout } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [selectedSong, setSelectedSong] = useState(null);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isSongOpen, setIsSongOpen] = useState(false);
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
+  const [isAlbumOpen, setIsAlbumOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
 
-  if (!token) return <Login />;
+  if (!token) {
+    return authMode === 'login' 
+        ? <Login onSwitch={() => setAuthMode('signup')} /> 
+        : <Signup onBackToLogin={() => setAuthMode('login')} />;
+  }
 
-  const openReview = (song) => {
-    setSelectedSong(song);
-    setSidebarOpen(true);
-  };
+  const openReview = (s) => { setSelectedSong(s); setIsSongOpen(true); };
+  const openAlbum = (a) => { setSelectedAlbum(a); setIsAlbumOpen(true); };
 
   return (
     <Router>
       <div className="brutal-outer">
         <header className="brutal-header">
-           <div className="logo" onClick={() => window.location.href = '/'}>
-             <Disc size={32} strokeWidth={3} />
-             <span>MELODEX / REVIEWS</span>
-           </div>
-           <div className="header-actions">
-             <div className="user-pill">Logged in: {user?.username?.toUpperCase() || 'USER'}</div>
-             <button className="logout-btn" onClick={logout}>Logout</button>
-           </div>
+          <Link to="/" className="logo">
+            <DiscIcon size={32} />
+            <span>MELODEX / REVIEWS</span>
+          </Link>
+          <div className="header-actions">
+            <button className="icon-btn" onClick={toggleTheme}>
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
+            <div className="user-pill">{user?.username?.toUpperCase()}</div>
+            <button className="logout-btn" onClick={logout}>Logout</button>
+          </div>
         </header>
 
         <div className="brutal-container">
-           <aside className="brutal-sidebar">
-             <nav>
-               <NavLink to="/" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>01 / Feed</NavLink>
-               <NavLink to="/search" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>02 / Search</NavLink>
-               <NavLink to="/lists" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>03 / My Lists</NavLink>
-               <NavLink to="/profile" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>04 / My Profile</NavLink>
-             </nav>
-           </aside>
+          <aside className="brutal-sidebar">
+            <nav>
+              <NavLink to="/" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>Feed</NavLink>
+              <NavLink to="/search" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>Search</NavLink>
+              <NavLink to="/lists" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>My Lists</NavLink>
+              <NavLink to="/profile" className={({ isActive }) => isActive ? 'nav-btn active' : 'nav-btn'}>Profile</NavLink>
+            </nav>
+          </aside>
 
-           <main className="brutal-main">
-             <Routes>
-               <Route path="/" element={<Dashboard openReview={openReview} />} />
-               <Route path="/search" element={<SearchPage openReview={openReview} />} />
-               <Route path="/lists" element={<MyLists />} />
-               <Route path="/profile" element={<Profile />} />
-               <Route path="*" element={<Navigate to="/" />} />
-             </Routes>
-           </main>
+          <main className="brutal-main">
+            <Routes>
+              <Route path="/" element={<Dashboard openReview={openReview} openAlbum={openAlbum} />} />
+              <Route path="/search" element={<SearchPage openReview={openReview} openAlbum={openAlbum} />} />
+              <Route path="/lists" element={<MyLists />} />
+              <Route path="/lists/:id" element={<ListDetail />} />
+              <Route path="/artist/:id" element={<ArtistProfile openReview={openReview} openAlbum={openAlbum} />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </main>
         </div>
 
-        <ReviewSidebar 
-          song={selectedSong} 
-          isOpen={isSidebarOpen} 
-          onClose={() => setSidebarOpen(false)} 
-        />
+        <ReviewSidebar song={selectedSong} isOpen={isSongOpen} onClose={() => setIsSongOpen(false)} openAlbum={openAlbum} />
+        <AlbumSidebar album={selectedAlbum} isOpen={isAlbumOpen} onClose={() => setIsAlbumOpen(false)} onOpenSongReview={(s) => { setIsAlbumOpen(false); openReview(s); }} />
+        <NotificationToast />
       </div>
     </Router>
   );

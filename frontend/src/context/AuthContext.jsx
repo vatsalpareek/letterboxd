@@ -1,13 +1,12 @@
-/* frontend/src/context/AuthContext.jsx */
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('token') || null);
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+    const [notifications, setNotifications] = useState([]);
 
-    // This runs when you login: Save the token forever
     const login = (newToken, userData) => {
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(userData));
@@ -15,7 +14,6 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
     };
 
-    // This runs when you logout: Clean everything
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -23,8 +21,16 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const notify = (msg, type = 'success') => {
+        const id = Date.now();
+        setNotifications(prev => [...prev, { id, msg, type }]);
+        setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 3000);
+    };
+
     return (
-        <AuthContext.Provider value={{ token, user, login, logout }}>
+        <AuthContext.Provider value={{ token, user, login, logout, notifications, notify }}>
             {children}
         </AuthContext.Provider>
     );

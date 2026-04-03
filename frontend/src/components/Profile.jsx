@@ -1,74 +1,84 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { User, Calendar, Award } from 'lucide-react';
+import { User } from 'lucide-react';
 
 const Profile = () => {
-    const { user, token } = useContext(AuthContext);
-    const [stats, setStats] = useState({ count: 0, lists: 0 });
-    const [myReviews, setMyReviews] = useState([]);
+    const { user: authUser, token } = useContext(AuthContext);
+    const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const upgradeImg = (url) => url?.replace(/\/\d+x\d+bb\.jpg$/, '/1000x1000bb.jpg') || '';
+
     useEffect(() => {
-        const fetchUserData = async () => {
-            if (!user) return;
+        const fetchMe = async () => {
+            if (!token) return;
             try {
-                // Fetch reviews count
-                const revRes = await axios.get(`http://localhost:3000/api/reviews/user/${user.id}`);
-                const reviews = revRes.data.reviews || [];
-                setMyReviews(reviews);
-
-                // Fetch lists count
-                const listRes = await axios.get(`http://localhost:3000/api/lists/user/${user.id}`);
-                const lists = listRes.data.lists || [];
-
-                setStats({ count: reviews.length, lists: lists.length });
-            } catch (err) { console.error('Profile error:', err); }
-            finally { setLoading(false); }
+                const res = await axios.get('http://localhost:3000/api/users/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                setProfileData(res.data);
+            } catch (err) { 
+                console.error('Profile fetch error:', err);
+                if (err.response?.status === 401) {
+                    // Token likely invalid
+                }
+            } finally { setLoading(false); }
         };
-        fetchUserData();
-    }, [user, token]);
+        fetchMe();
+    }, [token]);
 
     if (loading) return <div className="brutal-loader">Analyzing stats...</div>;
+    if (!profileData) return <div className="brutal-loader">Not Authorized. Please Login.</div>;
+
+    const { user, reviews } = profileData;
 
     return (
-        <div className="profile-container">
+        <div className="profile-wrapper">
             <header className="profile-header-brutal">
                 <div className="user-icon-box"><User size={64} /></div>
                 <div className="user-info-stack">
-                    <h1>{user?.username?.toUpperCase()}</h1>
+                    <p className="label-dim">MEMBER FILE</p>
+                    <h1 className="user-title">{(user?.username || authUser?.username || 'GUEST').toUpperCase()}</h1>
                     <div className="stats-row">
                         <div className="stat-pill">
-                           <span className="label">Total Reviews:</span>
-                           <span className="value">{stats.count}</span>
+                           <span className="label">REVIEWS:</span>
+                           <span className="value">{user?.review_count || 0}</span>
                         </div>
                         <div className="stat-pill">
-                           <span className="label">Collections:</span>
-                           <span className="value">{stats.lists}</span>
+                           <span className="label">ARCHIVES:</span>
+                           <span className="value">{user?.list_count || 0}</span>
                         </div>
                         <div className="stat-pill">
-                           <span className="label">Membership:</span>
-                           <span className="value">PRO</span>
+                           <span className="label">LEVEL:</span>
+                           <span className="value">MASTER</span>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <section className="profile-history">
-                <h2>Your Entry History</h2>
+            <section className="profile-history-section">
+                <div className="section-title-box">
+                    <h2>ENTRY HISTORY</h2>
+                </div>
                 <div className="brutal-grid">
-                    {myReviews.map((rev) => (
-                        <div className="brutal-card" key={rev.id}>
-                            <img src={rev.cover_url} alt={rev.title} className="card-image-box" />
+                    {(reviews || []).map((rev) => (
+                        <div className="brutal-card profile-card" key={rev.id}>
+                            <img src={upgradeImg(rev.cover_url)} alt={rev.title} className="card-image-box" />
                             <div className="card-info">
-                                <div className="rating-pill">{'★'.repeat(rev.rating)}</div>
-                                <h4>{rev.title.toUpperCase()}</h4>
-                                <p className="artist">{rev.artist.toUpperCase()}</p>
-                                <p className="review-body">"{rev.body}"</p>
+                                <span className="type-badge-mini">{(rev.item_type || 'song').toUpperCase()}</span>
+                                <div className="rating-pill">{'★'.repeat(Math.round(rev.rating) || 0)}</div>
+                                <h4>{(rev.title || 'Untitled').toUpperCase()}</h4>
+                                <p className="artist-label">{(rev.artist || 'Unknown').toUpperCase()}</p>
+                                <p className="review-snippet">"{rev.body}"</p>
                             </div>
                         </div>
                     ))}
-                    {myReviews.length === 0 && <p className="empty-msg">You haven't logged anything yet.</p>}
+                    {(reviews || []).length === 0 && (
+                        <div className="empty-state-card" style={{ gridColumn: '1 / -1' }}>
+                            Archive is empty. Start your first audit.
+                        </div>
+                    )}
                 </div>
             </section>
         </div>

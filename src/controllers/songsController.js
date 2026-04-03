@@ -1,62 +1,121 @@
 const appleService = require('../services/appleService');
 const songModel = require('../models/songModel');
+const albumModel = require('../models/albumModel');
 
 const songsController = {
     // GET /api/songs/search?q=query
     search: async (req, res) => {
         try {
             const query = req.query.q;
-            if (!query) {
-                return res.status(400).json({ error: 'Search query is required. Usage: /api/songs/search?q=your_search' });
-            }
+            if (!query) return res.status(400).json({ error: 'Query is required.' });
 
-            // 1. Search Apple API
-            const results = await appleService.searchSongs(query);
+            const appleResults = await appleService.searchAll(query);
+            const savedResults = [];
 
-            if (!results || results.length === 0) {
-                return res.status(200).json({ message: 'No songs found.', songs: [] });
-            }
-
-            // 2. Cache the results in our database
-            const savedSongs = [];
-            for (const track of results) {
-                // Try to save via our model
-                let savedTrack = await songModel.create(track);
-                
-                // If the track already existed, create() returns undefined because of ON CONFLICT DO NOTHING
-                // In that case, we can manually fetch it to get its local DB ID
-                if (!savedTrack) {
-                    savedTrack = await songModel.findByExternalId(track.external_id, track.source_platform);
+            for (const item of appleResults) {
+                if (item.type === 'song') {
+                    let saved = await songModel.create({
+                        external_id: item.id,
+                        source_platform: 'apple',
+                        title: item.title,
+                        artist: item.artist,
+                        artist_id: item.artistId,
+                        album_name: item.album || 'Unknown Album',
+                        album_id: item.albumId,
+                        cover_url: item.cover_url,
+                        duration_ms: item.duration_ms,
+                        release_date: item.release_date
+                    });
+                    if (saved) savedResults.push({ ...saved, type: 'song' });
+                    
+                } else if (item.type === 'album') {
+                    let saved = await albumModel.create({
+                        external_id: item.id,
+                        source_platform: 'apple',
+                        title: item.title,
+                        artist: item.artist,
+                        artist_id: item.artistId,
+                        cover_url: item.cover_url,
+                        release_date: item.release_date,
+                        track_count: item.trackCount
+                    });
+                    if (saved) savedResults.push({ ...saved, type: 'album' });
+                    
+                } else {
+                    savedResults.push(item);
                 }
-                
-                if (savedTrack) {
-                    savedSongs.push(savedTrack);
-                }
             }
-
-            // 3. Return the cached results complete with our internal database IDs
-            res.status(200).json({ songs: savedSongs });
-
+            res.status(200).json({ results: savedResults });
         } catch (error) {
-            console.error('Error in songs search controller:', error);
-            res.status(500).json({ error: 'Internal server error during search.' });
+            console.error('Search error:', error);
+            res.status(500).json({ error: 'Search failed.' });
         }
     },
 
-    // GET /api/songs/:id
+    // GET /api/songs/artist/:id
+    getArtist: async (req, res) => {
+        try {
+            const artistId = req.params.id;
+            const albumsRaw = await appleService.getArtistDiscography(artistId);
+            
+            const savedAlbums = [];
+            for (const alb of albumsRaw) {
+                let saved = await albumModel.create({
+                    external_id: alb.id.toString(),
+                    source_platform: 'apple',
+                    title: alb.title,
+                    artist: alb.artist,
+                    artist_id: alb.artistId,
+                    cover_url: alb.cover_url,
+                    release_date: alb.release_date,
+                    track_count: alb.trackCount
+                });
+                if (saved) savedAlbums.push({ ...saved, type: 'album' });
+            }
+            res.status(200).json({ albums: savedAlbums });
+        } catch (error) {
+            console.error('Artist lookup error:', error);
+            res.status(500).json({ error: 'Artist lookup failed.' });
+        }
+    },
+
+    // GET /api/songs/album/:id
+    getAlbum: async (req, res) => {
+        try {
+            const albumId = req.params.id;
+            const rawTracks = await appleService.getAlbumTracks(albumId);
+            
+            const savedTracks = [];
+            for (const tk of rawTracks) {
+                let saved = await songModel.create({
+                    external_id: tk.id.toString(),
+                    source_platform: 'apple',
+                    title: tk.title,
+                    artist: tk.artist,
+                    artist_id: tk.artistId,
+                    album_name: 'Unknown Album', 
+                    album_id: tk.albumId,
+                    cover_url: tk.cover_url,
+                    duration_ms: tk.duration_ms,
+                    release_date: tk.release_date
+                });
+                if (saved) savedTracks.push(saved);
+            }
+            res.status(200).json({ tracks: savedTracks });
+        } catch (error) {
+            console.error('Album lookup error:', error);
+            res.status(500).json({ error: 'Album lookup failed.' });
+        }
+    },
+
     getById: async (req, res) => {
         try {
             const id = req.params.id;
             const song = await songModel.findById(id);
-
-            if (!song) {
-                return res.status(404).json({ error: 'Song not found in our database.' });
-            }
-
+            if (!song) return res.status(404).json({ error: 'Not found.' });
             res.status(200).json({ song });
         } catch (error) {
-            console.error('Error fetching song by ID:', error);
-            res.status(500).json({ error: 'Internal server error fetching song.' });
+            res.status(500).json({ error: 'Fetch failed.' });
         }
     }
 };
